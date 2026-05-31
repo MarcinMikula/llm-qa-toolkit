@@ -6,8 +6,10 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # Run nightly at 02:00 UTC to catch model drift
     - cron: '0 2 * * *'
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -44,46 +46,23 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          MOCK_FLAG=""
+          if [ -z "$ANTHROPIC_API_KEY" ]; then MOCK_FLAG="--mock"; fi
           pytest tests/ \
+            $MOCK_FLAG \
             --alluredir=allure-results \
             --tb=short \
             -v \
-            --timeout=60 \
-            -x  # stop on first failure in CI; remove for full run
-        continue-on-error: true  # collect all results before generating report
+            --timeout=60
 
       - name: Generate Allure report
         if: always()
         run: allure generate allure-results --clean -o allure-report
 
-      - name: Upload Allure report as artifact
+      - name: Upload Allure report
         uses: actions/upload-artifact@v5
         if: always()
         with:
           name: allure-report-${{ github.run_number }}
           path: allure-report/
           retention-days: 30
-
-      - name: Upload raw Allure results
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: allure-results-${{ github.run_number }}
-          path: allure-results/
-          retention-days: 30
-
-      - name: Publish test results summary
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: allure-results/**/*.xml
-          comment_title: 'LLM QA Test Results'
-          check_name: 'LLM QA'
-
-      - name: Fail job if tests failed
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          MOCK_FLAG=""
-          if [ -z "$ANTHROPIC_API_KEY" ]; then MOCK_FLAG="--mock"; fi
-          pytest tests/ $MOCK_FLAG --tb=no -q
