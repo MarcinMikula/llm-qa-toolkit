@@ -81,6 +81,9 @@ jobs:
           check_name: 'LLM QA'
 
       - name: Fail job if tests failed
-        run: pytest tests/ --tb=no -q --ignore-glob="*regression*"
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          MOCK_FLAG=""
+          if [ -z "$ANTHROPIC_API_KEY" ]; then MOCK_FLAG="--mock"; fi
+          pytest tests/ $MOCK_FLAG --tb=no -q
