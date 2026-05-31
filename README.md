@@ -120,7 +120,7 @@ llm-qa-toolkit/
 ### Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/llm-qa-toolkit
+git clone https://github.com/MarcinMikula/llm-qa-toolkit
 cd llm-qa-toolkit
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
