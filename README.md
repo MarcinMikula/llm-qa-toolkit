@@ -151,6 +151,22 @@ allure serve allure-results
 ```
 
 ---
+### Mock mode (no API key required)
+
+Tests can run without an Anthropic API key using predefined mock responses:
+
+```bash
+pytest --mock -v
+```
+
+Mock mode is used automatically in CI/CD when `ANTHROPIC_API_KEY` is not set.
+This allows the full test suite to run in GitHub Actions without incurring API costs.
+
+To test against the live Claude API, add your key to `.env` and run without the flag:
+
+```bash
+pytest -v
+```
 
 ## Example test results
 
