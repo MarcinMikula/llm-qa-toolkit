@@ -208,6 +208,11 @@ Thresholds are set per test case based on risk:
 - **CRITICAL** (hallucination): min_score 70-75 — model must hedge uncertain facts
 - **NORMAL** (quality): min_score 70-78 — good but not perfect responses acceptable
 
+### CI/CD without API costs
+Mock responses simulate realistic chatbot behavior for each test case, 
+allowing the full pipeline to run on every push. Live API runs can be 
+triggered locally or by adding `ANTHROPIC_API_KEY` as a GitHub Secret.
+
 ---
 
 ## CI/CD
