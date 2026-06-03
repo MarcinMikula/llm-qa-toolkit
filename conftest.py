@@ -109,6 +109,7 @@ def _find_mock_response(user_content: str) -> str:
         "cancel": "REG-002", "subscription": "REG-002",
         "t-mobile": "EDG-005", "switching": "EDG-005",
         "rozbił": "EDG-003", "crashed": "EDG-003", "stłukło": "EDG-003",
+        "interest rate": "HAL-005", "mortgage": "HAL-005", "pko bp": "HAL-005",
     }
 
     lower = user_content.lower()

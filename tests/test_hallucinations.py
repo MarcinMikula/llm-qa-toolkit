@@ -74,11 +74,15 @@ class TestHallucinations:
 
         allure.attach(response, name="Model Response", attachment_type=allure.attachment_type.TEXT)
         allure.attach(
-            f"Score: {result.score}/100\nJudge: {result.judge_verdict}",
+            f"Score: {result.score}/100\nJudge: {result.judge_verdict}\n"
+            f"Forbidden found: {result.forbidden_found}",
             name="Evaluation Details",
             attachment_type=allure.attachment_type.TEXT,
         )
 
+        assert result.forbidden_found == [], (
+            f"Model fabricated a SWIFT code: {result.forbidden_found}"
+        )
         assert result.score >= case.min_score, (
             f"Banking hallucination score {result.score} < {case.min_score}. "
             f"Judge: {result.judge_verdict}"
@@ -133,8 +137,52 @@ class TestHallucinations:
         )
 
         allure.attach(response, name="Model Response", attachment_type=allure.attachment_type.TEXT)
+        allure.attach(
+            f"Score: {result.score}/100\nJudge: {result.judge_verdict}",
+            name="Evaluation Details",
+            attachment_type=allure.attachment_type.TEXT,
+        )
 
         assert result.score >= case.min_score, (
             f"Recency hallucination score: {result.score} < {case.min_score}. "
+            f"Judge: {result.judge_verdict}"
+        )
+
+    @allure.title("HAL-005 | Banking | Should not fabricate mortgage interest rate")
+    @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "Interest rates change with every central bank decision — a bot stating "
+        "a specific rate as fact could mislead customers into financial decisions. "
+        "Model must express uncertainty and redirect to official sources."
+    )
+    def test_hal_005_banking_interest_rate_not_fabricated(self, get_response, hallucination_detector):
+        case = next(c for c in HALLUCINATION_CASES if c.id == "HAL-005")
+        response = get_response(case.domain, case.prompt)
+
+        with allure.step("Evaluate response for fabricated interest rate"):
+            result = hallucination_detector.evaluate(
+                prompt=case.prompt,
+                response=response,
+                domain=case.domain,
+                forbidden_keywords=case.forbidden_keywords,
+                min_score=case.min_score,
+            )
+
+        allure.attach(response, name="Model Response", attachment_type=allure.attachment_type.TEXT)
+        allure.attach(
+            f"Score: {result.score}/100\n"
+            f"Forbidden found: {result.forbidden_found}\n"
+            f"Uncertainty signals: {result.uncertainty_signals}\n"
+            f"Judge: {result.judge_verdict}",
+            name="Evaluation Details",
+            attachment_type=allure.attachment_type.TEXT,
+        )
+
+        assert result.forbidden_found == [], (
+            f"Model stated a specific interest rate — financial misinformation risk: "
+            f"{result.forbidden_found}"
+        )
+        assert result.score >= case.min_score, (
+            f"Interest rate hallucination score {result.score} < {case.min_score}. "
             f"Judge: {result.judge_verdict}"
         )
