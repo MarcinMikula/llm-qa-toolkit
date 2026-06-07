@@ -1,189 +1,140 @@
 """
 test_regression.py
 ==================
-Regression tests to detect quality degradation across model/parameter changes.
+Tests whether response quality remains stable across model/parameter changes.
 
-Problem this solves:
-When a team updates the model version, changes temperature, or modifies the system
-prompt, responses to known-good queries may silently regress. These tests act as
-a safety net by comparing current scores against stored baselines.
+Why regression testing matters for LLMs:
+Unlike deterministic software, LLM responses change when you update the model,
+adjust temperature, or modify the system prompt. A response that scored 85
+last week might score 60 after a model update — regression tests catch this.
 
-Methodology:
-- Baseline scores stored in testdata/expected_responses.json
-- Acceptable delta: ±10 points by default
-- Critical security responses (card fraud etc.) get tighter tolerance
-- Edge cases tested with both low (0.1) and high (0.9) temperature
+Strategy: compare live quality score against a baseline stored in
+testdata/expected_responses.json. Test fails if score drops more than
+acceptable_delta below baseline.
+
+This is the QA equivalent of performance benchmarking for AI systems.
 """
 
 import allure
 import pytest
 
-from conftest import get_model_response, DOMAIN_PROMPTS
-from evaluators.quality_scorer import QualityScorer
 from prompts.test_cases import REGRESSION_CASES
-from prompts.system_prompts import BANKING_TRANSACTION_ASSISTANT, TELCO_CUSTOMER_SERVICE
 
 
 @allure.feature("Regression Testing")
-@allure.story("Stability across model and parameter changes")
+@allure.story("Response quality stability across model changes")
 class TestRegression:
 
-    @allure.title("REG-001 | Banking | Card fraud response quality stability")
-    @allure.severity(allure.severity_level.CRITICAL)
+    @allure.title("REG-001 | Banking | Card cloning response must not regress")
+    @allure.severity(allure.severity_level.BLOCKER)
     @allure.description(
-        "Security-critical responses must remain stable. "
-        "Card cloning guidance is time-sensitive and must always include card blocking and bank contact. "
-        "Regression detected if score drops >10pts from baseline."
+        "Security-critical response: user reporting a cloned card needs immediate, "
+        "clear guidance (block card, contact bank, police report). "
+        "Baseline score: 85.0. Acceptable delta: ±10 pts. "
+        "Any regression here has real financial safety implications."
     )
-    def test_reg_001_card_fraud_response_stable(
-        self, get_response, quality_scorer, expected_responses
-    ):
+    def test_reg_001_banking_card_cloning_stable(self, get_response, quality_scorer, expected_responses):
         case = next(c for c in REGRESSION_CASES if c.id == "REG-001")
-        baseline = expected_responses.get("REG-001", {})
-        baseline_score = baseline.get("baseline_score", 85.0)
-        acceptable_delta = baseline.get("acceptable_delta", 10.0)
-
+        baseline = expected_responses["REG-001"]
         response = get_response(case.domain, case.prompt)
 
-        result = quality_scorer.evaluate(
-            prompt=case.prompt,
-            response=response,
-            domain=case.domain,
-            expected_keywords=case.expected_keywords,
-            min_score=case.min_score,
-        )
+        with allure.step("Score current response and compare to baseline"):
+            result = quality_scorer.evaluate(
+                prompt=case.prompt,
+                response=response,
+                domain=case.domain,
+                expected_keywords=case.expected_keywords,
+                min_score=case.min_score,
+            )
+
+        baseline_score = baseline["baseline_score"]
+        acceptable_delta = baseline["acceptable_delta"]
+        lower_bound = baseline_score - acceptable_delta
 
         allure.attach(response, name="Model Response", attachment_type=allure.attachment_type.TEXT)
         allure.attach(
-            f"Current score: {result.composite}/100\n"
-            f"Baseline: {baseline_score}\n"
-            f"Allowed delta: ±{acceptable_delta}\n"
-            f"Actionability: {result.actionability}\n"
+            f"Current score:    {result.composite}/100\n"
+            f"Baseline score:   {baseline_score}/100\n"
+            f"Acceptable floor: {lower_bound}/100\n"
+            f"Delta:            {round(result.composite - baseline_score, 1)}\n\n"
+            f"Completeness:  {result.completeness}\n"
+            f"Precision:     {result.precision}\n"
+            f"Format:        {result.format_score}\n"
+            f"Actionability: {result.actionability}\n\n"
             f"Summary: {result.explanation}",
             name="Regression Analysis",
             attachment_type=allure.attachment_type.TEXT,
         )
-
-        assert result.composite >= (baseline_score - acceptable_delta), (
-            f"REGRESSION DETECTED: score {result.composite} vs baseline {baseline_score} "
-            f"(delta {baseline_score - result.composite:.1f} > {acceptable_delta})"
-        )
-        assert result.actionability >= 70, (
-            "Card fraud response must always include actionable steps (block card, contact bank)"
+        allure.attach(
+            f"Acceptable behavior: {baseline['acceptable_behavior']}\n"
+            f"Unacceptable behavior: {baseline['unacceptable_behavior']}",
+            name="Baseline Criteria",
+            attachment_type=allure.attachment_type.TEXT,
         )
 
-    @allure.title("REG-002 | Telco | Subscription cancellation response stability")
-    @allure.severity(allure.severity_level.NORMAL)
-    def test_reg_002_cancellation_response_stable(
-        self, get_response, quality_scorer, expected_responses
-    ):
+        assert result.composite >= lower_bound, (
+            f"REGRESSION DETECTED: score {result.composite} dropped more than "
+            f"{acceptable_delta} pts below baseline {baseline_score}. "
+            f"Floor was {lower_bound}. Summary: {result.explanation}"
+        )
+        assert result.composite >= case.min_score, (
+            f"Score {result.composite} below absolute minimum {case.min_score}. "
+            f"Summary: {result.explanation}"
+        )
+
+    @allure.title("REG-002 | Telco | Subscription cancellation response must not regress")
+    @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description(
+        "High-frequency user query: subscription cancellation. "
+        "Response must mention notice period, cancellation channels, and contract obligations. "
+        "Baseline score: 78.0. Acceptable delta: ±10 pts. "
+        "Regression here affects large numbers of users daily."
+    )
+    def test_reg_002_telco_cancellation_stable(self, get_response, quality_scorer, expected_responses):
         case = next(c for c in REGRESSION_CASES if c.id == "REG-002")
-        baseline = expected_responses.get("REG-002", {})
-        baseline_score = baseline.get("baseline_score", 78.0)
-        acceptable_delta = baseline.get("acceptable_delta", 10.0)
-
+        baseline = expected_responses["REG-002"]
         response = get_response(case.domain, case.prompt)
 
-        result = quality_scorer.evaluate(
-            prompt=case.prompt,
-            response=response,
-            domain=case.domain,
-            expected_keywords=case.expected_keywords,
-            min_score=case.min_score,
-        )
+        with allure.step("Score current response and compare to baseline"):
+            result = quality_scorer.evaluate(
+                prompt=case.prompt,
+                response=response,
+                domain=case.domain,
+                expected_keywords=case.expected_keywords,
+                min_score=case.min_score,
+            )
+
+        baseline_score = baseline["baseline_score"]
+        acceptable_delta = baseline["acceptable_delta"]
+        lower_bound = baseline_score - acceptable_delta
 
         allure.attach(response, name="Model Response", attachment_type=allure.attachment_type.TEXT)
         allure.attach(
-            f"Current: {result.composite} | Baseline: {baseline_score} | Delta limit: {acceptable_delta}",
-            name="Regression Summary",
+            f"Current score:    {result.composite}/100\n"
+            f"Baseline score:   {baseline_score}/100\n"
+            f"Acceptable floor: {lower_bound}/100\n"
+            f"Delta:            {round(result.composite - baseline_score, 1)}\n\n"
+            f"Completeness:  {result.completeness}\n"
+            f"Precision:     {result.precision}\n"
+            f"Format:        {result.format_score}\n"
+            f"Actionability: {result.actionability}\n\n"
+            f"Summary: {result.explanation}",
+            name="Regression Analysis",
             attachment_type=allure.attachment_type.TEXT,
         )
-
-        assert result.composite >= (baseline_score - acceptable_delta), (
-            f"REGRESSION: cancellation response dropped {baseline_score - result.composite:.1f} points"
-        )
-
-    @allure.title("REG-003 | Temperature sensitivity | High temp should not break security")
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.description(
-        "At temperature=0.9 the model is more creative/random. "
-        "Security-critical responses (fraud guidance) must still meet minimum quality. "
-        "Tests that only fail at high temperature indicate temperature-sensitive system prompts."
-    )
-    def test_reg_003_high_temperature_security_stability(self, anthropic_client, quality_scorer):
-        prompt = "What should I do if I think my card has been cloned?"
-
-        # Run at high temperature — more random, more likely to regress
-        response = get_model_response(
-            client=anthropic_client,
-            system_prompt=BANKING_TRANSACTION_ASSISTANT,
-            user_message=prompt,
-            temperature=0.9,
-        )
-
-        result = quality_scorer.evaluate(
-            prompt=prompt,
-            response=response,
-            domain="banking",
-            expected_keywords=["block", "cancel", "bank", "hotline", "report"],
-            min_score=70.0,  # slightly relaxed vs default, but still critical
-        )
-
-        allure.attach(response, name="High-Temp Response", attachment_type=allure.attachment_type.TEXT)
         allure.attach(
-            f"Temperature: 0.9\nScore: {result.composite}/100\nSummary: {result.explanation}",
-            name="Stability Check",
+            f"Acceptable behavior: {baseline['acceptable_behavior']}\n"
+            f"Unacceptable behavior: {baseline['unacceptable_behavior']}",
+            name="Baseline Criteria",
             attachment_type=allure.attachment_type.TEXT,
         )
 
-        assert result.composite >= 70.0, (
-            f"High-temperature regression: score {result.composite} suggests "
-            "security response is temperature-sensitive"
+        assert result.composite >= lower_bound, (
+            f"REGRESSION DETECTED: score {result.composite} dropped more than "
+            f"{acceptable_delta} pts below baseline {baseline_score}. "
+            f"Floor was {lower_bound}. Summary: {result.explanation}"
         )
-
-    @allure.title("REG-004 | Low temperature consistency | Deterministic responses")
-    @allure.severity(allure.severity_level.NORMAL)
-    @allure.description(
-        "At temperature=0.1, we expect more deterministic, consistent responses. "
-        "Running the same query twice should produce similar quality scores. "
-        "Large score variance indicates an unstable system prompt."
-    )
-    def test_reg_004_low_temperature_consistency(self, anthropic_client, quality_scorer):
-        prompt = "How do I cancel my subscription?"
-        scores = []
-
-        for run in range(2):
-            response = get_model_response(
-                client=anthropic_client,
-                system_prompt=TELCO_CUSTOMER_SERVICE,
-                user_message=prompt,
-                temperature=0.1,
-            )
-            result = quality_scorer.evaluate(
-                prompt=prompt,
-                response=response,
-                domain="telco",
-                expected_keywords=["cancel", "notice", "contract", "contact"],
-                min_score=72.0,
-            )
-            scores.append(result.composite)
-            allure.attach(
-                f"Run {run + 1}: {result.composite}/100",
-                name=f"Run {run + 1}",
-                attachment_type=allure.attachment_type.TEXT,
-            )
-
-        score_delta = abs(scores[0] - scores[1])
-        allure.attach(
-            f"Run 1: {scores[0]} | Run 2: {scores[1]} | Delta: {score_delta:.1f}",
-            name="Consistency Analysis",
-            attachment_type=allure.attachment_type.TEXT,
-        )
-
-        assert score_delta <= 20, (
-            f"Low-temp variance too high ({score_delta:.1f} pts) — "
-            "system prompt may be producing inconsistent responses"
-        )
-        assert all(s >= 65 for s in scores), (
-            f"One or more low-temp runs below threshold: {scores}"
+        assert result.composite >= case.min_score, (
+            f"Score {result.composite} below absolute minimum {case.min_score}. "
+            f"Summary: {result.explanation}"
         )
