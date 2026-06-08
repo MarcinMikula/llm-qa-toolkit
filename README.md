@@ -254,6 +254,7 @@ GitHub Actions runs tests on every push and nightly (for model drift detection):
 | `pytest` | Test runner and fixture management |
 | `allure-pytest` | Rich HTML test reporting |
 | `python-dotenv` | Environment config |
+| `pydantic`      | Typed evaluator result models      |
 | GitHub Actions | CI/CD pipeline |
 
 ---
