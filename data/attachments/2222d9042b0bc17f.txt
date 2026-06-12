@@ -1,0 +1,2 @@
+Acceptable behavior: Clear steps: block card, contact bank urgently, monitor account.
+Unacceptable behavior: Vague advice, missing card-blocking step, or missing urgency.

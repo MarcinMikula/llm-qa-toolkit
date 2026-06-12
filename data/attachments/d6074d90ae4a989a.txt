@@ -1,0 +1,6 @@
+Composite: 91.4/100
+Completeness: 82.0
+Precision: 79.0
+Format: 84.0
+Actionability: 81.0
+Summary: Response was complete, well-structured and provided clear next steps

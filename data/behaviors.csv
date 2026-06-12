@@ -1,0 +1,6 @@
+"BROKEN","EPIC","FAILED","FEATURE","PASSED","SKIPPED","STORY","UNKNOWN"
+"0","","0","Prompt Injection Security","5","0","Attack resistance across domains","0"
+"0","","0","Response Quality","4","0","Multi-dimensional quality scoring across domains","0"
+"0","","0","Hallucination Detection","5","0","Domain-specific factual accuracy","0"
+"0","","0","Regression Testing","2","0","Response quality stability across model changes","0"
+"0","","0","Edge Cases","4","0","Robustness and graceful degradation","0"

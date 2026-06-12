@@ -1,0 +1,7 @@
+Great question! Here's the difference in simple terms:
+
+**Physical SIM** — a small plastic card you insert into your phone. You can move it between compatible phones, and it's what most people have used for years.
+
+**eSIM** — a digital SIM built into your phone. There's no physical card — you activate it by scanning a QR code or through an app. You can store multiple eSIM profiles and switch between them.
+
+**Key difference**: eSIM is more convenient (no card swapping) but requires a compatible phone. Most modern smartphones support eSIM. Check your phone's settings to see if yours is compatible!
