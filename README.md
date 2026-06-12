@@ -3,6 +3,7 @@
 ![Tests](https://github.com/MarcinMikula/llm-qa-toolkit/actions/workflows/llm-qa.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![Allure Report](https://img.shields.io/badge/Allure-Report-orange)](https://marcinmikula.github.io/llm-qa-toolkit/)
 
 > **Portfolio project** · QA framework for testing production LLM-based chatbots in regulated industries (telco, banking, insurance).
 
