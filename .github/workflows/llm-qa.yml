@@ -9,7 +9,7 @@ on:
     - cron: '0 2 * * *'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   test:
@@ -62,3 +62,11 @@ jobs:
           name: allure-report-${{ github.run_number }}
           path: allure-report/
           retention-days: 30
+          
+        name: Deploy Allure report to GitHub Pages
+        if: github.ref == 'refs/heads/main' && always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report
+          publish_branch: gh-pages
