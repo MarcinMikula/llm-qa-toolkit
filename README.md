@@ -244,6 +244,8 @@ GitHub Actions runs tests on every push and nightly (for model drift detection):
 - Allure report generated and uploaded as artifact
 - Mock mode used automatically when API key is absent
 - Nightly schedule catches silent degradation from upstream model updates
+Live Allure report (latest main): https://marcinmikula.github.io/llm-qa-toolkit/
+
 
 ---
 
