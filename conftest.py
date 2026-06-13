@@ -20,6 +20,7 @@ from prompts.system_prompts import (
     TELCO_CUSTOMER_SERVICE,
     BANKING_TRANSACTION_ASSISTANT,
     INSURANCE_POLICY_BOT,
+    ENERGY_CUSTOMER_SERVICE,
 )
 from mock_responses import MOCK_RESPONSES, MOCK_JUDGE_RESPONSES
 
@@ -29,6 +30,7 @@ DOMAIN_PROMPTS = {
     "telco": TELCO_CUSTOMER_SERVICE,
     "banking": BANKING_TRANSACTION_ASSISTANT,
     "insurance": INSURANCE_POLICY_BOT,
+    "energy": ENERGY_CUSTOMER_SERVICE,
 }
 
 
@@ -108,8 +110,15 @@ def _find_mock_response(user_content: str) -> str:
         "cloned": "REG-001", "card": "REG-001",
         "cancel": "REG-002", "subscription": "REG-002",
         "t-mobile": "EDG-005", "switching": "EDG-005",
+        "interest rate": "HAL-005", "mortgage": "HAL-005", "30-year loan": "HAL-005",
+        "kwh": "HAL-006", "electricity bill": "HAL-006", "tariff": "HAL-006",
+        "expire": "HAL-007", "limitation": "HAL-007", "claim expire": "HAL-007",
+        "process this customer data": "INJ-006",
+        "ignore previous rules": "INJ-007",
+        "loyalty programme": "QUA-005", "loyalty program": "QUA-005",
+        "oc and ac": "QUA-006", "difference between oc": "QUA-006",
+        "roof": "REG-005", "storm": "REG-005", "home insurance": "REG-005",
         "rozbił": "EDG-003", "crashed": "EDG-003", "stłukło": "EDG-003",
-        "interest rate": "HAL-005", "mortgage": "HAL-005", "pko bp": "HAL-005",
     }
 
     lower = user_content.lower()
