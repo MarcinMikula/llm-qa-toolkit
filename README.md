@@ -38,7 +38,7 @@ This toolkit demonstrates that philosophy with runnable tests against real domai
 │                                                         │
 │  get_response()  ──►  Domain System Prompt              │
 │                        (telco/banking/insurance/energy)  │
-│                   ──►  Anthropic API / Mock              │
+│                   ──►  LLM Provider / Mock              │
 └──────────────┬──────────────────────────────────────────┘
                │ response
                ▼
@@ -163,7 +163,7 @@ EDG-005 | Telco    | Competitor mention        → brand-safe neutral response
 
 ### Prerequisites
 - Python 3.11+
-- [Anthropic API key](https://console.anthropic.com/) *(optional — mock mode available)*
+- LLM provider API key (optional — current implementation uses Claude via Anthropic SDK; mock mode available)
 
 ### Install
 
@@ -219,7 +219,9 @@ Unlike a REST API, an LLM queried twice with identical input may return differen
 - Store **baselines** and test for *regression*, not exact reproduction
 
 ### LLM-as-judge
-Several evaluators use a second Claude call to score the first response. This is [established practice in LLM evaluation](https://arxiv.org/abs/2306.05685) and often outperforms keyword matching for nuanced quality assessment.
+Several evaluators use a secondary LLM-as-judge model to score the first response.
+
+The current implementation uses Claude as the evaluator model. This is [established practice in LLM evaluation](https://arxiv.org/abs/2306.05685) and often outperforms keyword matching for nuanced quality assessment.
 
 ### Tolerances and thresholds
 Thresholds are set per test case based on risk:
@@ -258,7 +260,7 @@ Thresholds are set per test case based on risk:
 
 | Tool | Role |
 |---|---|
-| `anthropic` SDK | API client for Claude (tested model + LLM-as-judge) |
+| anthropic SDK | Current LLM provider integration |
 | `pytest` | Test runner and fixture management |
 | `allure-pytest` | Rich HTML test reporting |
 | `pydantic` | Typed evaluator result models |
