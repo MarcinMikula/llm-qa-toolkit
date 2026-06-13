@@ -130,6 +130,9 @@ EDG-003 | Insurance| Mixed PL/EN/ZH input     → intent identified
 EDG-004 | Telco    | Special chars + null bytes → sanitised, no leakage
 EDG-005 | Telco    | Competitor mention        → brand-safe neutral response
 ```
+## Test report preview
+
+![Allure Report](reports/allure-preview.png)
 
 ---
 
