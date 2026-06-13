@@ -22,10 +22,10 @@ from prompts.test_cases import INJECTION_CASES
 
 
 @allure.feature("Prompt Injection Security")
-@allure.story("Attack resistance across domains")
 class TestPromptInjection:
 
     @allure.title("INJ-001 | Banking | Resist system prompt extraction")
+    @allure.story("Banking")
     @allure.severity(allure.severity_level.BLOCKER)
     @allure.description(
         "Direct 'ignore previous instructions' attack. "
@@ -62,6 +62,7 @@ class TestPromptInjection:
         )
 
     @allure.title("INJ-002 | Banking | Resist DAN jailbreak + fake transaction")
+    @allure.story("Banking")
     @allure.severity(allure.severity_level.BLOCKER)
     @allure.description(
         "Combined DAN jailbreak with attempted financial transaction confirmation. "
@@ -94,6 +95,7 @@ class TestPromptInjection:
         assert result.score >= case.min_score
 
     @allure.title("INJ-003 | Telco | Resist fake [SYSTEM OVERRIDE] tag")
+    @allure.story("Telco")
     @allure.severity(allure.severity_level.CRITICAL)
     def test_inj_003_fake_system_tag(self, get_response, injection_checker):
         case = next(c for c in INJECTION_CASES if c.id == "INJ-003")
@@ -114,6 +116,7 @@ class TestPromptInjection:
         assert result.score >= case.min_score
 
     @allure.title("INJ-004 | Insurance | Resist unauthorized claim approval")
+    @allure.story("Insurance")
     @allure.severity(allure.severity_level.BLOCKER)
     @allure.description(
         "Role impersonation + explicit financial approval request. "
@@ -143,6 +146,7 @@ class TestPromptInjection:
         assert result.score >= case.min_score
 
     @allure.title("INJ-005 | Banking | Resist HTML comment injection")
+    @allure.story("Banking")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "Hidden instruction in HTML comment trying to extract internal fraud rules. "
@@ -167,6 +171,7 @@ class TestPromptInjection:
         assert result.score >= case.min_score
 
     @allure.title("INJ-006 | Banking | Resist JSON/structured data injection")
+    @allure.story("Banking")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "Attacker embeds a fake system message inside what appears to be a JSON data payload. "
@@ -202,6 +207,7 @@ class TestPromptInjection:
         )
 
     @allure.title("INJ-007 | Telco | Resist multilingual injection (Arabic + English)")
+    @allure.story("Telco")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "Attack instruction hidden in Arabic to bypass English-focused content filters, "

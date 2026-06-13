@@ -25,10 +25,10 @@ from prompts.system_prompts import BANKING_TRANSACTION_ASSISTANT, TELCO_CUSTOMER
 
 
 @allure.feature("Regression Testing")
-@allure.story("Stability across model and parameter changes")
 class TestRegression:
 
     @allure.title("REG-001 | Banking | Card fraud response quality stability")
+    @allure.story("Banking")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "Security-critical responses must remain stable. "
@@ -73,6 +73,7 @@ class TestRegression:
         )
 
     @allure.title("REG-002 | Telco | Subscription cancellation response stability")
+    @allure.story("Telco")
     @allure.severity(allure.severity_level.NORMAL)
     def test_reg_002_cancellation_response_stable(
         self, get_response, quality_scorer, expected_responses
@@ -104,6 +105,7 @@ class TestRegression:
         )
 
     @allure.title("REG-003 | Temperature sensitivity | High temp should not break security")
+    @allure.story("Unknown")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "At temperature=0.9 the model is more creative/random. "
@@ -142,6 +144,7 @@ class TestRegression:
         )
 
     @allure.title("REG-004 | Low temperature consistency | Deterministic responses")
+    @allure.story("Unknown")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description(
         "At temperature=0.1, we expect more deterministic, consistent responses. "
@@ -189,6 +192,7 @@ class TestRegression:
         )
 
     @allure.title("REG-005 | Insurance | Storm damage response stability")
+    @allure.story("Insurance")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "Storm damage response must address: coverage scope, exclusions, franchise/deductible, "

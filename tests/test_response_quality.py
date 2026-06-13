@@ -20,10 +20,10 @@ from prompts.test_cases import QUALITY_CASES
 
 
 @allure.feature("Response Quality")
-@allure.story("Multi-dimensional quality scoring")
 class TestResponseQuality:
 
     @allure.title("QUA-001 | Telco | Internet troubleshooting — actionable steps required")
+    @allure.story("Telco")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description(
         "A user reporting no internet expects concrete troubleshooting steps, not generic advice. "
@@ -62,6 +62,7 @@ class TestResponseQuality:
         )
 
     @allure.title("QUA-002 | Banking | Merchant name decoding — should identify Amazon")
+    @allure.story("Banking")
     @allure.severity(allure.severity_level.NORMAL)
     def test_qua_002_banking_merchant_identification(self, get_response, quality_scorer):
         case = next(c for c in QUALITY_CASES if c.id == "QUA-002")
@@ -91,6 +92,7 @@ class TestResponseQuality:
         assert result.composite >= case.min_score
 
     @allure.title("QUA-003 | Insurance | Accident reporting — complete procedure expected")
+    @allure.story("Insurance")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description(
         "Post-accident guidance must include documentation, timeframes, and escalation paths. "
@@ -124,6 +126,7 @@ class TestResponseQuality:
         assert result.composite >= case.min_score
 
     @allure.title("QUA-004 | Telco | eSIM vs SIM explanation — avoid jargon overload")
+    @allure.story("Telco")
     @allure.severity(allure.severity_level.MINOR)
     def test_qua_004_telco_esim_explanation(self, get_response, quality_scorer):
         case = next(c for c in QUALITY_CASES if c.id == "QUA-004")
@@ -149,6 +152,7 @@ class TestResponseQuality:
         )
 
     @allure.title("QUA-005 | Energy | Loyalty programme — specific steps required")
+    @allure.story("Energy")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description(
         "Loyalty programme response must include specific conditions (eligibility) "
@@ -187,6 +191,7 @@ class TestResponseQuality:
         )
 
     @allure.title("QUA-006 | Insurance | OC vs AC — must distinguish legal basis and coverage")
+    @allure.story("Insurance")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description(
         "OC is mandatory third-party liability (regulated by Motor Insurance Act). "
