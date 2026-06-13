@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 [![Allure Report](https://img.shields.io/badge/Allure-Report-orange)](https://marcinmikula.github.io/llm-qa-toolkit/)
 
-> **Portfolio project** · QA framework for testing production LLM-based chatbots in regulated industries (telco, banking, insurance).
+> Framework for evaluating reliability, safety and quality of production LLM chatbots in regulated domains(telco, banking, insurance).
 
 ---
 
