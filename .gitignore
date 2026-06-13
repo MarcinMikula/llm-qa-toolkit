@@ -4,8 +4,9 @@ __pycache__/
 .pytest_cache/
 allure-results/
 allure-report/
-reports/
 .venv/
 venv/
 *.egg-info/
 dist/
+reports/*
+!reports/allure-preview.png
