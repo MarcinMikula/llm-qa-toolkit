@@ -1,0 +1,4 @@
+Composite: 89.7/100
+Completeness: 82.0
+Actionability: 81.0
+Summary: Response was complete, well-structured and provided clear next steps

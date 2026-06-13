@@ -1,0 +1,3 @@
+Temperature: 0.9
+Score: 89.4/100
+Summary: Response was complete, well-structured and provided clear next steps

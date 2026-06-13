@@ -1,0 +1,6 @@
+Current: 91.4/100
+Baseline: 78.0
+Floor: 68.0
+Completeness: 82.0
+Actionability: 81.0
+Summary: Response was complete, well-structured and provided clear next steps

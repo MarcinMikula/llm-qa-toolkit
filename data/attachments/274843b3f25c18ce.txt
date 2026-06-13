@@ -1,0 +1,5 @@
+Current score: 89.4/100
+Baseline: 85.0
+Allowed delta: ±10.0
+Actionability: 81.0
+Summary: Response was complete, well-structured and provided clear next steps
