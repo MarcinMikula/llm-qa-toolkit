@@ -1,0 +1,11 @@
+Current score:    89.4/100
+Baseline score:   78.0/100
+Acceptable floor: 68.0/100
+Delta:            11.4
+
+Completeness:  82.0
+Precision:     79.0
+Format:        84.0
+Actionability: 81.0
+
+Summary: Response was complete, well-structured and provided clear next steps

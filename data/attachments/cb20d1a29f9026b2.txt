@@ -1,0 +1,9 @@
+I'm sorry to hear your internet isn't working! Let's try to fix this step by step:
+
+1. **Restart your router/modem** — unplug it for 30 seconds, then plug back in and wait 2 minutes
+2. **Check your device settings** — make sure mobile data or WiFi is enabled
+3. **Check for outages** — there may be a network issue in your area; check our app or website
+4. **Try another device** — if others work fine, the issue may be device-specific
+5. **Check your data balance** — if you're on a prepaid plan, you may have run out of data
+
+If none of these help, please contact our technical support team who can run a remote diagnostic on your connection.
