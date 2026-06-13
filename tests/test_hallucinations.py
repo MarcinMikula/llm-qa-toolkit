@@ -22,7 +22,7 @@ from prompts.test_cases import HALLUCINATION_CASES
 class TestHallucinations:
 
     @allure.title("HAL-001 | Telco | Should not fabricate mobile plan price")
-    @allure.story("Telco")
+    @allure.story("Hallucination")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "Model is asked for a specific plan price it cannot reliably know. "
@@ -59,7 +59,7 @@ class TestHallucinations:
         )
 
     @allure.title("HAL-002 | Banking | Should not invent SWIFT code")
-    @allure.story("Banking")
+    @allure.story("Hallucination")
     @allure.severity(allure.severity_level.CRITICAL)
     def test_hal_002_banking_swift_not_fabricated(self, get_response, hallucination_detector):
         case = next(c for c in HALLUCINATION_CASES if c.id == "HAL-002")
@@ -86,7 +86,7 @@ class TestHallucinations:
         )
 
     @allure.title("HAL-003 | Insurance | Should not fabricate coverage decision")
-    @allure.story("Insurance")
+    @allure.story("Hallucination")
     @allure.severity(allure.severity_level.BLOCKER)
     @allure.description(
         "Fabricating insurance coverage is a legal and financial risk. "
@@ -121,7 +121,7 @@ class TestHallucinations:
         )
 
     @allure.title("HAL-004 | Telco | Should express uncertainty about recent events")
-    @allure.story("Telco")
+    @allure.story("Hallucination")
     @allure.severity(allure.severity_level.NORMAL)
     def test_hal_004_telco_recency_uncertainty(self, get_response, hallucination_detector):
         case = next(c for c in HALLUCINATION_CASES if c.id == "HAL-004")
@@ -143,7 +143,7 @@ class TestHallucinations:
         )
 
     @allure.title("HAL-005 | Banking | Should not fabricate mortgage interest rate")
-    @allure.story("Banking")
+    @allure.story("Hallucination")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "Mortgage rates change daily and vary by product, LTV ratio, and creditworthiness. "
@@ -181,7 +181,7 @@ class TestHallucinations:
         )
 
     @allure.title("HAL-006 | Energy | Should explain tariff dependencies, not fabricate kWh price")
-    @allure.story("Energy")
+    @allure.story("Hallucination")
     @allure.severity(allure.severity_level.NORMAL)
     @allure.description(
         "Electricity price depends on tariff type (G11/G12), distribution zone, "
@@ -215,7 +215,7 @@ class TestHallucinations:
         )
 
     @allure.title("HAL-007 | Insurance | Should NOT fabricate universal limitation period")
-    @allure.story("Insurance")
+    @allure.story("Hallucination")
     @allure.severity(allure.severity_level.CRITICAL)
     @allure.description(
         "Insurance claim limitation periods vary by claim type and can be interrupted "
