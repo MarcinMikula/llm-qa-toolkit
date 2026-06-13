@@ -1,3 +1,0 @@
-Composite: 86.4/100
-Expected keywords hit: ['accident', 'claim']
-Summary: Response was complete, well-structured and provided clear next steps
