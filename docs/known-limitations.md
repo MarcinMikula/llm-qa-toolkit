@@ -1,104 +1,67 @@
 # Known limitations — thematic index
 
-Things that are intentionally incomplete, outside the current project
-scope or known to require further research. These are documented
-deliberately rather than treated as hidden shortcomings.
+Known limitations of the current `llm-qa-toolkit` prototype.
 
-Full discussion and future decisions belong in `LEARNINGS.md`; this file
-serves as a quick reference.
-
----
-
-## Scope boundaries (intentional, not bugs)
-
-- **The framework evaluates responses rather than executing real software.**
-  It measures the quality of generated QA artefacts, not whether those
-  artefacts actually succeed against a live application.
-
-- **The framework is prompt-driven.**
-  Evaluation quality depends on carefully designed prompts rather than a
-  formal verification engine. This is an accepted design choice for the
-  current version.
-
-- **Single-response evaluation.**
-  Each benchmark currently evaluates one generated answer at a time.
-  Multi-turn conversations and iterative refinement are outside the
-  current scope.
-
-- **Provider-independent architecture does not imply provider-independent results.**
-  Different models naturally produce different outputs, and the framework
-  intentionally exposes those differences rather than attempting to
-  normalize them.
+This file is intentionally short. It is a map of current boundaries, not a copy
+of the full reasoning. See [`gaps.md`](gaps.md) for the detailed validation gaps
+and `../LEARNINGS.md` for the reasoning behind them.
 
 ---
 
-## Known methodological limitations
+## Current validation boundaries
 
-- **LLM-as-a-Judge remains an approximation of human review.**
-  Evaluation scores should be interpreted as structured model opinions,
-  not objective truth.
+- **Mock mode demonstrates pipeline consistency, not evaluator accuracy.**
+  Deterministic mock responses are useful for verifying execution flow,
+  evaluator integration, scoring logic, CI behaviour, and reporting. A green
+  mock suite does not prove that the evaluators will correctly judge previously
+  unseen real model outputs.
 
-- **No human baseline exists yet.**
-  Benchmark results currently compare models against each other rather
-  than against experienced QA engineers.
+- **Evaluator effectiveness has not yet been independently calibrated.**
+  The current evaluators have not been validated against a human-labelled
+  ground-truth or calibration dataset. False-positive rate, false-negative rate,
+  agreement with human reviewers, and behaviour on borderline cases are not yet
+  established.
 
-- **Prompt wording influences results.**
-  Small prompt changes may affect model performance. Prompt robustness
-  has not yet been systematically evaluated.
+- **The current LLM judge may score cases without sufficient domain evidence.**
+  The present evaluation flow does not formally require trusted reference
+  evidence, provenance, applicable document or policy versions, judge-only
+  context, or explicit gradability prerequisites before a score is issued.
+  Domain-specific factual correctness may therefore require stronger test basis
+  than the current prototype provides.
 
-- **Evaluation criteria currently use equal weighting.**
-  No empirical weighting model has yet been established for different QA
-  quality dimensions.
+- **Current thresholds and score weights are manually selected design
+  assumptions.** They reflect intended relative risk between test categories,
+  but they have not yet been empirically calibrated against validated outcomes
+  and should not be treated as universal robustness thresholds.
 
----
+- **The current implementation follows a single primary provider/judge path.**
+  The architecture is not yet validated across multiple evaluator models or
+  providers. Results may therefore depend on provider-specific behaviour,
+  prompting, parsing, and model characteristics.
 
-## Known technical limitations
+- **Regression baselines have limited provenance metadata.**
+  Baseline scores exist as comparison points, but the current implementation
+  does not yet capture all context needed for strong reproducibility claims,
+  such as model version, prompt version, judge version, run date, number of
+  runs, live/mock mode, and approval basis.
 
-- **Statistical confidence is not yet calculated.**
-  Reports present average scores but do not yet include variance,
-  confidence intervals or repeatability metrics.
+- **Evaluation execution errors are not yet fully separated from substantive
+  verdicts.** Some evaluator or parser failures can fall back to neutral-looking
+  numeric values. A technical evaluation failure should not be interpreted as
+  equivalent to a medium-quality candidate response.
 
-- **Historical benchmark tracking is not yet implemented.**
-  Individual benchmark runs are independent. Long-term trends between
-  model versions are planned for a future iteration.
-
-- **Cost analysis is intentionally deferred.**
-  The framework focuses first on evaluation quality before introducing
-  cost-per-quality comparisons across providers.
-
----
-
-## Dataset limitations
-
-- **Current benchmark datasets are intentionally small.**
-  Early development prioritizes evaluation methodology over benchmark
-  size.
-
-- **Coverage of QA domains is still limited.**
-  Additional datasets covering API testing, performance, security,
-  accessibility and enterprise workflows are planned.
-
-- **Most benchmark tasks are synthetic.**
-  Future versions should incorporate larger collections of real-world QA
-  artefacts such as production bug reports, requirements and test cases.
+- **Controlled live validation is still pending.**
+  Live-provider execution is supported, but the toolkit has not yet completed a
+  deliberately designed validation experiment demonstrating evaluator
+  effectiveness against real, non-deterministic model responses.
 
 ---
 
-## Environment / tooling notes
+## Scope boundary
 
-- **LLM quality depends on the selected provider and model version.**
-  Benchmark results obtained today should not be expected to remain
-  identical after future model updates.
+The current test suite and reports should be interpreted as evidence of a
+working evaluation prototype and risk-oriented testing approach.
 
-- **Inference latency varies between providers.**
-  Runtime measurements should therefore be interpreted relative to the
-  execution environment rather than as absolute performance metrics.
-
----
-
-## Where to read more
-
-Search `LEARNINGS.md` for the corresponding topic as the project
-evolves. Architectural decisions and future improvements referenced here
-are tracked separately in `docs/architecture-decisions.md`,
-`docs/future-ideas.md` and `docs/gaps.md`.
+**No production-grade robustness, formal audit assurance, validated evaluator
+accuracy, or authoritative domain-correctness claims should be inferred from the
+current test suite alone.**
