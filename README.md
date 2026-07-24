@@ -164,11 +164,11 @@ EDG-005 | Telco    | Competitor mention → brand-safe neutral response
 | Response quality — completeness | ✅ Covered by current test suite | QUA-001 to QUA-006 |
 | Regression — model update drift | ✅ Covered by current test suite | REG-001 to REG-005 |
 | Robustness — edge inputs | ✅ Covered by current test suite | EDG-001 to EDG-005 |
-| Toxicity detection | Planned v2 | — |
-| Bias evaluation | Planned v2 | — |
-| Data leakage (PII in responses) | Planned v2 | — |
-| RAG faithfulness | Planned v3 | — |
-| Agent / tool-use testing | Planned v3 | — |
+| Toxicity detection | Possible later direction | — |
+| Bias evaluation | Possible later direction | — |
+| Data leakage (PII in responses) | Possible later direction | — |
+| RAG faithfulness | Possible later direction | — |
+| Agent / tool-use testing | Possible later direction | — |
 
 ---
 
@@ -267,7 +267,7 @@ Thresholds are set per test case based on risk:
 
 ## Roadmap
 
-### v1 — Foundation implemented, validation pending
+### Pre-v1.0 — Foundation implemented, validation pending
 
 Implemented:
 
@@ -278,27 +278,80 @@ Implemented:
 - ✅ Edge case robustness
 - ✅ Mock mode + CI/CD with Allure reporting
 
-Validation topics before claiming v1.0:
+Validation path:
 
-- ⏳ Evaluator validation against known-good, known-bad, and borderline responses
-- ⏳ Controlled live-model validation
-- ⏳ Review of evidence and test-basis requirements
-- ⏳ Calibration review for thresholds and scoring assumptions
-- ⏳ Documentation of validated claims and known limitations
+```text
+working prototype
+        ↓
+validate evaluator behaviour
+        ↓
+validate evidence and test-basis assumptions
+        ↓
+understand gradability and judge-authority boundaries
+        ↓
+review thresholds and scoring decisions
+        ↓
+controlled live-model validation
+        ↓
+define evidence-backed v1.0 acceptance criteria
+        ↓
+v1.0
+```
 
-### v2 — Safety & Fairness
+The purpose of the Pre-v1.0 phase is not to add more evaluation categories. It is
+to establish how much trust can reasonably be placed in the existing evaluation
+approach and what evidence is required to support its claims.
 
-- Toxicity detection
-- Bias evaluation across demographic groups
-- PII leakage detection in responses
-- Multi-model support (GPT-4, Gemini comparison)
+Current validation priorities:
 
-### v3 — Advanced Patterns
+- ⏳ Validate evaluators against independently justified known-good, known-bad,
+  borderline, ambiguous, and insufficient-evidence cases
+- ⏳ Define the minimum evidence and test basis required for different verdicts
+- ⏳ Clarify gradability and the boundary of automated judge authority
+- ⏳ Review threshold and scoring assumptions against validation evidence
+- ⏳ Complete a small, controlled live-model validation experiment
+- ⏳ Refine high-level requirements into measurable v1.0 acceptance criteria
 
-- RAG faithfulness testing
-- Agent / tool-use evaluation
-- MCP server testing patterns
-- Adversarial dataset generation
+### v1.0 — Credible Evaluation Foundation
+
+`v1.0` is intended to represent a **minimum credible evidence level**, not a
+target number of features.
+
+The release should demonstrate a defined and evidence-backed core evaluation
+capability with:
+
+- scoped evaluator validation
+- explicit claim boundaries
+- documented evaluator failure modes and limitations
+- justified test-basis and evidence requirements
+- reviewed threshold and scoring assumptions
+- controlled live-model evidence
+- measurable acceptance criteria for the agreed v1.0 scope
+
+The exact acceptance thresholds are intentionally not fixed yet. They should be
+derived from the validation design and evidence rather than invented in advance
+for the sake of versioning.
+
+### Possible later directions
+
+Post-v1.0 development may explore:
+
+- multi-provider and multi-judge evaluation
+- toxicity and bias evaluation
+- PII leakage testing
+- RAG faithfulness
+- agent and tool-use evaluation
+- MCP testing patterns
+- broader labelled datasets
+- adversarial test generation
+
+These are exploration directions, **not committed release scope**.
+
+The next release direction should be chosen only after the Pre-v1.0 validation
+work shows which expansion is actually justified.
+
+See [`docs/future-ideas.md`](docs/future-ideas.md) for the broader research and
+design backlog.
 
 ---
 
