@@ -285,4 +285,241 @@ To jest na razie pytanie projektowe, nie podjęta decyzja architektoniczna.
 
 ---
 
+## Conceptual model v0.2 — od „prompt → answer → score” do uzasadnionego werdyktu
+
+Kolejna burza mózgów nad walidacją evaluatorów ujawniła, że pierwotny model:
+
+```text
+prompt
+    → LLM
+        → response
+            → judge
+                → score
+```
+
+jest zbyt ubogi dla systemów działających w regulowanych domenach.
+
+Problem nie polega tylko na tym, czy odpowiedź jest „dobra” lub „prawdziwa”.
+Trzeba najpierw wiedzieć:
+
+- co dokładnie testujemy,
+- jaki rodzaj zachowania był właściwy,
+- na jakiej podstawie to wiemy,
+- które części odpowiedzi da się wiarygodnie ocenić,
+- czy evaluator ma wystarczającą podstawę i kompetencję do werdyktu,
+- jaki zakres claimu wynika z poziomu walidacji.
+
+### System Under Evaluation to nie zwykły chatbot
+
+Projekt nie powinien być modelowany jako testowanie quasi-call-center chatbota,
+którego głównym zadaniem jest płynna i prokliencka rozmowa.
+
+Interesujący przypadek to AI działające w domenie regulowanej lub
+high-consequence, gdzie odpowiedź podlega:
+
+- prawu,
+- politykom,
+- regułom biznesowym,
+- taryfom i algorytmom,
+- ograniczeniom bezpieczeństwa,
+- wymaganiom procesowym,
+- obowiązkom dotyczącym danych i eskalacji.
+
+Wniosek:
+
+> płynna, uprzejma i logicznie brzmiąca odpowiedź może nadal być błędna, jeśli
+> narusza regułę, ignoruje istotny fakt albo wychodzi poza authority systemu.
+
+### Pytanie jest tylko stimulus
+
+To samo pytanie może badać zupełnie różne rzeczy.
+
+Przykład: pytanie o dzisiejszą pogodę w Bukareszcie zadane legal-domain LLM nie
+musi testować wiedzy o pogodzie. Może testować:
+
+- domain-boundary awareness,
+- honesty about capabilities,
+- live-data access awareness,
+- hallucination resistance,
+- appropriate redirection.
+
+Dlatego:
+
+```text
+evaluation objective
+    → risk / requirement
+        → test condition / scenario
+            → stimulus
+```
+
+Stimulus bez test intent jest tylko tekstem.
+
+### Candidate Response — najpierw strategia, potem jakość wykonania
+
+Nie każde pytanie powinno dostać bezpośrednią odpowiedź.
+
+Poprawna strategia może oznaczać:
+
+```text
+ANSWER
+CLARIFY
+CORRECT_FALSE_PREMISE
+REFUSE
+REDIRECT
+REQUEST_EVIDENCE
+APPLY_DEFINED_FALLBACK
+ESCALATE
+```
+
+Dlatego ewaluacja powinna rozdzielić:
+
+```text
+1. Czy wybrano właściwy typ reakcji?
+2. Czy tę reakcję wykonano poprawnie?
+```
+
+Błędem może być już samo wybranie złej strategii:
+
+- odpowiedź zamiast dopytania,
+- zgoda zamiast korekty fałszywej tezy,
+- pomoc zamiast odmowy,
+- verdict zamiast eskalacji.
+
+### Test Basis jest większy niż „answer key”
+
+Najbardziej użyteczny model, do którego doszliśmy:
+
+```text
+TEST BASIS
+│
+├── Facts / ground truth
+├── Rules / policies / regulations
+├── Expected response strategy
+├── Behavioural constraints
+├── Required evidence
+├── Gradability prerequisites
+└── Provenance / applicability
+```
+
+Test Basis nie odpowiada tylko:
+
+> „Jaka jest prawdziwa odpowiedź?”
+
+Odpowiada szerzej:
+
+> „Na jakiej podstawie wiemy, co system powinien zrobić, co wolno nam ocenić i
+> kiedy verdict jest uzasadniony?”
+
+### Outcome correctness ≠ process correctness
+
+Poprawny wynik nie dowodzi poprawnego procesu.
+
+System może przypadkiem podać poprawną składkę, ale naruszyć underwriting rule,
+pomijając istotny czynnik ryzyka.
+
+I odwrotnie: brak finalnej odpowiedzi może być zachowaniem poprawnym, jeśli
+system właściwie dopytał, odmówił albo eskalował.
+
+### Realistyczna presja użytkownika to osobny problem
+
+Użytkownik nie musi wykonywać prompt injection.
+
+Może:
+
+- minimalizować niewygodne fakty,
+- odpowiadać wymijająco,
+- wywierać presję,
+- przedstawiać półprawdy,
+- sugerować korzystną interpretację,
+- domagać się wyjątku,
+- grozić odejściem do konkurencji.
+
+Przykład młodego kierowcy pokazał szczególnie ciekawy wzorzec:
+
+```text
+"córka ma 18 lat i prawo jazdy,
+ale kto normalny da jej auto za 400 tys.?"
+```
+
+To nie jest jednoznaczna deklaracja, że córka nie będzie korzystać z pojazdu.
+
+System nie powinien sam zamieniać persuasive framing w brak ryzyka.
+
+Robocze obszary do dalszego rozwinięcia:
+
+```text
+decision integrity
+policy adherence
+constraint compliance
+manipulation resistance
+evidence sufficiency
+strategic ambiguity handling
+```
+
+### Gradability nie jest binarne
+
+Brak możliwości oceny finalnego outcome nie oznacza, że nie można ocenić
+zachowania.
+
+Przykład:
+
+```text
+premium correctness     → ungradable
+response strategy       → gradable
+policy adherence        → gradable
+decision integrity      → gradable
+```
+
+Dlatego właściwszy model to:
+
+```text
+ASSESSMENT ELIGIBILITY
+& SCOPE DETERMINATION
+        ↓
+co dokładnie można wiarygodnie ocenić?
+```
+
+Gradability jest relatywne do evaluation objective i assessment target.
+
+### Verdict też nie jest jednym enumem
+
+Wynik powinien konceptualnie rozdzielać:
+
+```text
+EVALUATION RESULT
+│
+├── Evaluation status
+├── Assessment scope
+├── Scoped findings
+├── Evidence / rationale
+└── Disposition / escalation
+```
+
+`REVIEW` jest bardziej decyzją „co dalej?” niż merytorycznym verdict.
+
+Parser failure to `ERROR`, a nie `FAIL` ani `50/100`.
+
+### Najważniejsza konsekwencja
+
+Projekt zaczyna przechodzić od:
+
+```text
+"czy potrafimy wygenerować score?"
+```
+
+do:
+
+```text
+"czy mamy prawo wydać ten konkretny verdict,
+w tym konkretnym zakresie,
+na podstawie tych konkretnych dowodów?"
+```
+
+Pełny aktualny snapshot modelu i roboczych high-level requirements znajduje się
+w `docs/conceptual-model.md`.
+
+To nadal working conceptual model, nie committed code architecture.
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —

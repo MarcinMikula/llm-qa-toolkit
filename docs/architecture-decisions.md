@@ -14,6 +14,7 @@ See also:
 - [`known-limitations.md`](known-limitations.md) — concise current-state boundaries
 - [`testing-strategy.md`](testing-strategy.md) — validation levels and claim boundaries
 - [`future-ideas.md`](future-ideas.md) — deliberately deferred research directions
+- [`conceptual-model.md`](conceptual-model.md) — working conceptual model and HLR draft
 
 ---
 
@@ -426,6 +427,63 @@ the next proof of maturity.
 See `future-ideas.md`.
 
 ---
+
+
+# Decision boundary — conceptual model is design input, not committed code architecture
+
+The project now has a working conceptual model covering:
+
+```text
+regulated-domain evaluation objective
+test intent and stimulus
+candidate response strategy
+Test Basis
+assessment eligibility / scoped gradability
+evaluator authority
+layered evaluation result
+```
+
+The model is documented in `conceptual-model.md`.
+
+This is **not yet a decision to implement matching classes, enums, database
+tables, or services**.
+
+In particular, concepts such as:
+
+```text
+Expected response strategy
+Behavioural constraints
+FULLY_GRADABLE / PARTIALLY_GRADABLE
+scoped findings
+disposition / escalation
+```
+
+are conceptual vocabulary used to reason about requirements and validation.
+
+They should become committed implementation architecture only after:
+
+- the model survives further regulated-domain examples
+- contradictions and missing concepts are identified
+- high-level requirements are refined
+- measurable Pre-v1.0 validation objectives are agreed
+- the smallest useful implementation slice is defined
+
+This preserves an important order:
+
+```text
+conceptual model
+    → high-level requirements
+        → measurable acceptance criteria
+            → implementation architecture
+```
+
+not:
+
+```text
+existing code
+    → invent requirements that justify it
+```
+
 
 # Current architectural principle — validation before expansion
 

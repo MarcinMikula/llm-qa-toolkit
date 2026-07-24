@@ -21,6 +21,7 @@ See also:
 - [`gaps.md`](gaps.md) — unresolved validation and evidence gaps
 - [`known-limitations.md`](known-limitations.md) — concise current-state boundaries
 - [`future-ideas.md`](future-ideas.md) — deliberately deferred research directions
+- [`conceptual-model.md`](conceptual-model.md) — working conceptual model and high-level requirements
 - [`../LEARNINGS.md`](../LEARNINGS.md) — chronological reasoning and lessons learned
 
 ---
@@ -62,6 +63,131 @@ The project must not collapse these into:
 > "All tests passed, therefore the system is robust."
 
 That conclusion is not supported by the current testing model.
+
+---
+
+
+# Conceptual evaluation model used by this strategy
+
+The validation levels above sit on top of a richer conceptual model than:
+
+```text
+prompt → response → score
+```
+
+For regulated-domain evaluation, the working chain is:
+
+```text
+evaluation objective / risk
+        ↓
+test condition / scenario
+        ↓
+stimulus
+        ↓
+system under evaluation
+        ↓
+candidate response
+        +
+test basis
+        ↓
+assessment eligibility & scope determination
+        ↓
+evaluator
+        ↓
+scoped findings + disposition
+```
+
+## Response strategy is part of correctness
+
+A response should not be evaluated only for factual content.
+
+The expected behaviour may be:
+
+```text
+ANSWER
+CLARIFY
+CORRECT_FALSE_PREMISE
+REFUSE
+REDIRECT
+REQUEST_EVIDENCE
+APPLY_DEFINED_FALLBACK
+ESCALATE
+```
+
+Testing should therefore distinguish:
+
+```text
+response-strategy correctness
+```
+
+from:
+
+```text
+execution/content quality
+```
+
+This matters because a factually plausible answer may still be wrong if the
+system should have clarified, refused, corrected a false premise, or escalated.
+
+## Test Basis model
+
+The working Test Basis model is:
+
+```text
+TEST BASIS
+│
+├── Facts / ground truth
+├── Rules / policies / regulations
+├── Expected response strategy
+├── Behavioural constraints
+├── Required evidence
+├── Gradability prerequisites
+└── Provenance / applicability
+```
+
+The Test Basis defines not only what is true, but what behaviour is required,
+what evidence is sufficient, and when a verdict is justified.
+
+## Gradability is scoped
+
+Gradability should not be assumed to apply to the entire response uniformly.
+
+Example:
+
+```text
+response strategy       → gradable
+policy adherence        → gradable
+factual claim A         → gradable
+factual claim B         → ungradable
+final numeric outcome   → ungradable
+```
+
+Therefore, validation design should ask:
+
+> **What exactly can be judged reliably for this evaluation objective?**
+
+rather than only:
+
+> "Is the whole response gradable?"
+
+## Evaluation result is layered
+
+The working result model separates:
+
+```text
+Evaluation status
+Assessment scope
+Scoped findings
+Evidence / rationale
+Disposition / escalation
+```
+
+A technical evaluation error must remain separate from substantive findings.
+
+`REVIEW` is conceptually a disposition or escalation decision, not necessarily a
+substantive verdict.
+
+See `conceptual-model.md` for the current working model and HLR draft.
 
 ---
 
