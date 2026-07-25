@@ -19,6 +19,130 @@ The current project principle remains:
 
 ---
 
+## 0. Project identity and target framework role
+
+The term `framework` describes the intended direction more accurately than the
+current maturity level.
+
+### Current state
+
+At present, `llm-qa-toolkit` is best described as:
+
+> **A research-oriented evaluation harness and technical framework skeleton,
+> supported by a working conceptual model, lightweight methodology, and
+> high-level requirements for regulated-domain LLM evaluation.**
+
+The repository already contains a runnable technical prototype:
+
+```text
+test scenarios
+provider / mock integration
+heuristic evaluators
+LLM-assisted evaluators
+scoring and thresholds
+pytest orchestration
+CI and Allure reporting
+```
+
+It does not yet provide a validated, production-ready evaluation framework.
+
+### Target system relationship
+
+The intended framework sits between two externally supplied roles:
+
+```text
+EXTERNAL SYSTEM UNDER EVALUATION
+          "examinee"
+                │
+                ▼
+┌───────────────────────────────────────────────────────┐
+│              EVALUATION FRAMEWORK                    │
+│                                                       │
+│  test-definition validation                          │
+│  Test Basis and evidence control                     │
+│  context separation                                  │
+│  evaluation strategy and rubric                      │
+│  evaluator constraints and output schema             │
+│  assessment eligibility and scope                    │
+│  findings, rationale, review, and escalation          │
+└────────────────────────┬──────────────────────────────┘
+                         │
+                         ▼
+              EXTERNAL LLM EVALUATOR
+                    "examiner"
+                         │
+                         ▼
+              SCOPED EVALUATION RESULT
+```
+
+The framework is not the source of all domain truth and is not intended to
+replace domain experts.
+
+Its role is to control and make explicit:
+
+- the evaluation objective
+- the risk or requirement under test
+- the scenario and stimulus
+- the Test Basis
+- model-visible context
+- evaluator-only evidence
+- expected response strategy
+- gradability prerequisites
+- allowed assessment scope
+- required result structure
+- review and escalation conditions
+- traceability from evidence to finding and claim
+
+### Protocol control, not cognition control
+
+The framework may constrain an external evaluator through:
+
+```text
+prompt and role definition
+evidence package
+rubric
+assessment targets
+output schema
+required rationale
+validation and consistency checks
+```
+
+It cannot guarantee that the evaluator:
+
+- truly understands the domain
+- interprets every source correctly
+- is unbiased
+- is more competent than the system under evaluation
+- will not invent missing ground truth
+
+Therefore:
+
+> **The framework controls the evaluation protocol, the conditions under which a
+> verdict may be issued, and the boundaries of the allowed claim. It does not
+> control the evaluator's internal reasoning or manufacture missing expertise.**
+
+### Test-definition responsibility
+
+The framework should eventually validate more than prompt syntax.
+
+It should help determine whether:
+
+```text
+the evaluation objective is defined
+the stimulus exercises the intended risk
+the scenario is coherent
+the expected response strategy is justified
+the Test Basis is sufficient and applicable
+the assessment target is gradable
+the evaluator has authority to judge it
+the resulting finding can support the intended claim
+```
+
+This identity is a target direction, not a claim that all of these capabilities
+already exist in code.
+
+---
+
 ## 1. Meta-assumption: the system under evaluation operates in a regulated domain
 
 The primary target is not a generic conversational assistant whose main quality

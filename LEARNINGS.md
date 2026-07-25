@@ -522,4 +522,223 @@ To nadal working conceptual model, nie committed code architecture.
 
 ---
 
+## Project identity re-evaluation — czym projekt jest, a czym ma się stać
+
+Po zbudowaniu działającego pipeline'u i rozpoczęciu pracy nad Test Basis,
+gradability oraz evaluator authority pojawiła się ważna refleksja o tożsamości
+projektu.
+
+W README od początku używaliśmy słowa `framework`, ale obecny poziom dojrzałości
+nie uzasadnia jeszcze interpretacji:
+
+```text
+gotowy, walidowany framework do wiarygodnego testowania LLM
+```
+
+Bardziej uczciwy opis obecnego stanu to:
+
+```text
+działający techniczny prototyp
++
+evaluation harness
++
+szkielet przyszłego frameworka
++
+rozwijany model konceptualny
++
+lekka quasi-metodyka ewaluacji
++
+meta-wymagania dotyczące wiarygodności werdyktu
+```
+
+### Czym projekt miał być na początku
+
+Pierwotna idea była bliższa demonstracji technik testowania LLM:
+
+```text
+prompt
+    → LLM under test
+        → response
+            → heurystyka / LLM-as-judge
+                → score
+                    → pytest + report
+```
+
+Projekt miał pokazywać między innymi:
+
+- hallucination detection,
+- prompt-injection resistance,
+- response-quality scoring,
+- regression testing,
+- risk-oriented test scenarios.
+
+To był sensowny początek, ale określenie `framework` wyprzedzało faktyczną
+dojrzałość rozwiązania.
+
+### Czym projekt jest obecnie
+
+Obecnie kod stanowi runnable evaluation harness i techniczny prototyp.
+
+Jednocześnie powstała warstwa, której na początku nie było:
+
+```text
+evaluation objective
+risk / requirement
+test condition / scenario
+stimulus
+Candidate Response
+Test Basis
+expected response strategy
+behavioural constraints
+gradability
+evaluator authority
+scoped findings
+claim boundaries
+```
+
+To oznacza, że projekt przestaje być tylko zbiorem evaluatorów i testów.
+
+Staje się miejscem badania pytania:
+
+> **Jak zorganizować ewaluację LLM tak, aby zewnętrzny evaluator nie wydawał
+> silniejszego werdyktu, niż pozwalają mu Test Basis, evidence, kompetencje i
+> rzeczywisty zakres testu?**
+
+### Docelowa rola frameworka
+
+Na wysokim poziomie przyszły framework miałby pośredniczyć między dwoma
+zewnętrznymi rolami:
+
+```text
+EXTERNAL SYSTEM UNDER EVALUATION
+          "egzaminowany"
+                │
+                ▼
+        EVALUATION FRAMEWORK
+                │
+                ▼
+      EXTERNAL LLM EVALUATOR
+          "egzaminator"
+                │
+                ▼
+       SCOPED EVALUATION RESULT
+```
+
+System egzaminowany oraz egzaminator mogą być dostarczane z zewnątrz.
+
+Wartość frameworka nie polegałaby na tym, że sam jest najmądrzejszym modelem.
+Miałby kontrolować i porządkować protokół ewaluacji.
+
+Potencjalne odpowiedzialności frameworka:
+
+- walidacja evaluation objective, risk i scenario,
+- walidacja kompletności oraz applicability Test Basis,
+- rozdzielenie contextu widocznego dla examinee i evidence dostępnego tylko dla
+  evaluatora,
+- wybór i narzucenie expected response strategy oraz rubric,
+- ograniczenie assessment targets do tych, które są rzeczywiście gradable,
+- narzucenie struktury wyniku i wymaganej rationale,
+- oddzielenie technical evaluation error od substantive finding,
+- wykrywanie niespójności między evidence, scope i verdict,
+- zarządzanie `REVIEW`, escalation oraz human/domain-expert handoff,
+- zachowanie traceability między test intent, evidence, findings i claimem.
+
+Najważniejsze doprecyzowanie:
+
+> **Framework nie kontroluje wewnętrznego rozumowania zewnętrznego evaluatora.
+> Kontroluje protokół egzaminowania, warunki wydania werdyktu i granice
+> dopuszczalnego claimu.**
+
+### Co framework może narzucić zewnętrznemu evaluatorowi
+
+Może narzucić:
+
+```text
+input context
+evidence package
+rubric
+assessment targets
+output schema
+required rationale
+gradability rules
+fallback / escalation path
+```
+
+Może również odrzucić wynik, który jest:
+
+- nieparsowalny,
+- niekompletny,
+- logicznie sprzeczny,
+- szerszy niż assessment scope,
+- oparty na nieadekwatnym evidence,
+- wydany mimo niespełnionych gradability prerequisites.
+
+### Czego framework nie może zagwarantować
+
+Sam framework ani dobry prompt nie zagwarantują, że zewnętrzny judge:
+
+- naprawdę rozumie badaną domenę,
+- poprawnie interpretuje każdy dokument,
+- nie ma biasu,
+- nie uzupełnia brakującego ground truth,
+- jest kompetentniejszy od systemu ocenianego,
+- potrafi rozstrzygnąć każdą niejednoznaczną sprawę.
+
+Możemy ograniczyć swobodę evaluatora oraz badać jego zachowanie.
+
+Nie możemy wyprodukować kompetencji samym formatem JSON i system promptem.
+
+### Co właściwie framework powinien oceniać w definicji testu
+
+Nie wystarczy sprawdzić:
+
+> „Czy pytanie jest poprawnie napisane?”
+
+Framework powinien docelowo pomagać ustalić:
+
+```text
+Czy evaluation objective jest zdefiniowane?
+Czy stimulus rzeczywiście ćwiczy określone ryzyko?
+Czy scenario zawiera wystarczający kontekst?
+Czy expected response strategy wynika z Test Basis?
+Czy facts, rules i evidence są wystarczające?
+Czy provenance i applicability są właściwe?
+Czy dany assessment target jest gradable?
+Czy zaplanowany finding może poprzeć zamierzony claim?
+```
+
+Czyli nadrzędne pytanie brzmi:
+
+> **Czy ten test może dostarczyć evidence adekwatne do claimu, który chcemy
+> postawić?**
+
+### Publiczny opis projektu
+
+Aby nie wprowadzać przypadkowego odwiedzającego GitHub w błąd, README powinien
+jasno rozróżniać:
+
+```text
+current:
+working research prototype / evaluation harness / technical skeleton
+
+developing:
+conceptual model / lightweight methodology / high-level requirements
+
+intended:
+evidence-grounded evaluation framework controlling the evaluation protocol
+```
+
+Słowo `framework` pozostaje uzasadnionym kierunkiem docelowym, ale nie powinno
+sugerować, że projekt już dziś posiada dojrzałość, walidację i assurance typowe
+dla gotowego produktu.
+
+Ta refleksja nie umniejsza obecnej implementacji.
+
+Wyjaśnia, do czego jej potrzebujemy:
+
+> **Kod daje działający eksperymentalny pipeline. Metodyka definiuje, czym ten
+> pipeline musi sterować, aby kiedyś zasłużyć na miano wiarygodnego frameworka.**
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —

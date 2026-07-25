@@ -1,6 +1,6 @@
 # llm-qa-toolkit [![Tests](https://github.com/MarcinMikula/llm-qa-toolkit/actions/workflows/llm-qa.yml/badge.svg)](https://github.com/MarcinMikula/llm-qa-toolkit/actions) [![Allure Report](https://img.shields.io/badge/Allure-Report-orange)](https://marcinmikula.github.io/llm-qa-toolkit/) [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/) [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-> Working prototype of a toolkit for evaluating reliability, safety and quality of LLM chatbot responses in regulated-domain scenarios (telco, banking, insurance, energy).
+> Working research prototype and technical skeleton for an evidence-grounded LLM evaluation framework in regulated-domain scenarios (telco, banking, insurance, energy).
 
 **[Live Allure Report](https://marcinmikula.github.io/llm-qa-toolkit/)**
 
@@ -8,13 +8,143 @@
 
 ## Project status
 
-**Working evaluation pipeline prototype — validation pending.**
+**Working technical prototype and skeleton of a future evaluation framework — validation pending.**
 
-The toolkit currently demonstrates a runnable, risk-oriented LLM evaluation pipeline with mock execution, heuristic and LLM-assisted evaluators, regression baselines, CI, and reporting.
+The repository currently contains a runnable, risk-oriented LLM evaluation
+pipeline with mock execution, heuristic and LLM-assisted evaluators, regression
+baselines, CI, and reporting.
 
-The current test suite demonstrates pipeline behaviour and the evaluation approach. It does **not yet demonstrate independently validated evaluator accuracy or production-grade robustness assurance**.
+Around that implementation, the project is now developing:
 
-The next stage is not broader feature coverage, but validation of the evaluation approach itself: whether the evaluators, evidence, thresholds, and resulting verdicts are sufficiently reliable to support the claims being made.
+- a working conceptual model for regulated-domain LLM evaluation
+- a lightweight, evolving evaluation methodology
+- high-level meta-requirements for evidence, gradability, evaluator authority,
+  scoped findings, and claim boundaries
+
+This is not yet a mature or production-ready framework. The current
+implementation demonstrates pipeline behaviour and provides a technical base for
+research and validation. It does **not yet demonstrate independently validated
+evaluator accuracy or production-grade robustness assurance**.
+
+The next stage is not broader feature coverage, but validation of the evaluation
+approach itself: whether the evaluators, Test Basis, evidence, thresholds,
+gradability decisions, and resulting findings are sufficiently reliable to
+support the claims being made.
+
+---
+
+## What this project is — and what it is becoming
+
+The project started as a runnable set of LLM tests and evaluators:
+
+```text
+test prompt
+    → system under test
+        → response
+            → heuristic / LLM judge
+                → score
+                    → pytest
+```
+
+That implementation still exists and remains useful, but the project question
+has become broader:
+
+> **What must be true for an external evaluator's verdict about another LLM to
+> be justified?**
+
+### Current identity
+
+Today, the most accurate description is:
+
+> **A research-oriented evaluation harness and technical framework skeleton,
+> supported by a working conceptual model, lightweight methodology, and
+> high-level requirements for regulated-domain LLM evaluation.**
+
+The current code is the runnable prototype. The methodology and meta-requirements
+define what a credible future framework would need to control.
+
+### Intended framework role
+
+The target architecture assumes two externally supplied AI roles:
+
+```text
+EXTERNAL SYSTEM UNDER EVALUATION
+          "examinee"
+                │
+                ▼
+┌───────────────────────────────────────────────────────┐
+│              EVALUATION FRAMEWORK                    │
+│                                                       │
+│  - validates test intent and scenario                 │
+│  - validates the Test Basis                           │
+│  - controls model-visible and evaluator-only context  │
+│  - selects and constrains evaluation strategy         │
+│  - enforces structured evaluator output               │
+│  - determines gradability and allowed scope           │
+│  - records evidence, findings, and rationale          │
+│  - applies review and escalation rules                │
+└────────────────────────┬──────────────────────────────┘
+                         │
+                         ▼
+              EXTERNAL LLM EVALUATOR
+                    "examiner"
+                         │
+                         ▼
+              SCOPED EVALUATION RESULT
+```
+
+The framework is not intended to become the all-knowing judge.
+
+Its role is to:
+
+> **control the evaluation protocol, the conditions under which a verdict may be
+> issued, and the boundaries of what the evaluator is allowed to claim.**
+
+It may constrain:
+
+- what context and evidence the evaluator receives
+- which rubric and response schema it must use
+- which assessment targets are gradable
+- when evidence is insufficient
+- how technical errors differ from substantive findings
+- when human or domain-expert review is required
+- whether the result is internally consistent and traceable
+
+It cannot guarantee that an external evaluator truly understands the domain,
+interprets every source correctly, or is more competent than the evaluated
+system. Prompting and output schemas can constrain an evaluator, but they cannot
+manufacture missing expertise or ground truth.
+
+### What the framework should validate about a test
+
+The framework should not merely ask whether a prompt is well written.
+
+It should eventually help determine whether:
+
+```text
+the evaluation objective is defined
+the stimulus exercises the intended risk
+the scenario is coherent
+the expected response strategy is justified
+the Test Basis is sufficient and applicable
+the evaluator has authority to judge the target
+the resulting finding supports the intended claim
+```
+
+In other words:
+
+> **The framework should control the examination protocol, not pretend to
+> control the examiner's internal reasoning.**
+
+### Documentation map
+
+- [`LEARNINGS.md`](LEARNINGS.md) — chronological project reasoning and discoveries
+- [`docs/conceptual-model.md`](docs/conceptual-model.md) — current conceptual model and HLR draft
+- [`docs/architecture-decisions.md`](docs/architecture-decisions.md) — current structural and scope decisions
+- [`docs/testing-strategy.md`](docs/testing-strategy.md) — validation levels and claim boundaries
+- [`docs/gaps.md`](docs/gaps.md) — unresolved evidence and validation gaps
+- [`docs/known-limitations.md`](docs/known-limitations.md) — concise present-state limitations
+- [`docs/future-ideas.md`](docs/future-ideas.md) — parked research and expansion directions
 
 ---
 
@@ -28,7 +158,7 @@ This toolkit demonstrates that philosophy with runnable, domain-oriented test sc
 
 ---
 
-## Architecture
+## Current implementation architecture
 
 ```text
 ┌─────────────────────────────────────────────────────────┐

@@ -27,8 +27,9 @@ See also:
 | AD-03 | Combine deterministic heuristics with LLM-assisted evaluation | Active |
 | AD-04 | Keep mock mode as an intentional permanent validation layer | Active |
 | AD-05 | Treat regression baselines as comparison references, not ground truth | Active |
-| AD-06 | Keep project scope as an LLM evaluation toolkit, not a full AI robustness audit platform | Active |
+| AD-06 | Keep project scope as a focused evaluation toolkit / framework skeleton, not a full AI robustness audit platform | Active |
 | AD-07 | Validate evaluator behaviour before expanding to multi-provider benchmarking | Active |
+| AD-08 | Treat the future framework as an evaluation-protocol controller between external examinee and examiner systems | Working direction |
 
 ---
 
@@ -290,8 +291,9 @@ See `gaps.md` G-05.
 
 ## Decision
 
-Keep the project scoped as an **LLM evaluation toolkit and experimental
-evaluation framework**.
+Keep the project scoped as a focused **LLM evaluation toolkit, research
+prototype, and technical skeleton of a future evidence-grounded evaluation
+framework**.
 
 Do not expand it into a complete enterprise AI robustness auditing platform.
 
@@ -428,6 +430,106 @@ See `future-ideas.md`.
 
 ---
 
+# AD-08 — Framework controls the evaluation protocol, not evaluator cognition
+
+## Status
+
+**Working architectural direction.**
+
+The responsibility boundary is clear enough to guide further requirements, but
+the matching implementation architecture has not yet been designed.
+
+## Decision
+
+Treat the intended framework as an orchestration and control layer between:
+
+```text
+external system under evaluation
+        ↓
+evaluation framework
+        ↓
+external LLM evaluator
+        ↓
+scoped evaluation result
+```
+
+The system under evaluation and the evaluator may both be externally supplied.
+
+The framework shall not be modelled as an all-knowing judge.
+
+Its intended responsibility is to control the evaluation protocol and the
+conditions under which an evaluator may issue a finding.
+
+## Intended framework responsibilities
+
+The framework should eventually be able to coordinate or validate:
+
+- evaluation objective, risk, and scenario
+- stimulus and model-visible context
+- evaluator-only Test Basis and evidence
+- expected response strategy
+- behavioural constraints
+- rubric and assessment targets
+- gradability prerequisites and allowed scope
+- structured findings and rationale
+- technical evaluation status
+- review and escalation conditions
+- traceability between evidence, finding, and claim
+
+## Constraint boundary
+
+The framework may constrain an evaluator through:
+
+```text
+prompt / role
+input context
+evidence package
+rubric
+output schema
+required rationale
+consistency checks
+```
+
+It cannot guarantee that an external evaluator:
+
+- understands the domain
+- interprets evidence correctly
+- is unbiased
+- is more competent than the evaluated system
+- does not invent missing ground truth
+
+Therefore:
+
+> **The framework controls the examination protocol, verdict conditions, and
+> claim boundaries. It does not control the examiner's internal reasoning or
+> create missing expertise.**
+
+## Consequence
+
+Future architecture should not be designed as merely:
+
+```text
+send response to judge
+        ↓
+parse score
+```
+
+It should be derived from responsibilities such as:
+
+```text
+validate test definition
+validate Test Basis
+determine assessment eligibility
+constrain evaluator scope
+validate result consistency
+preserve evidence and rationale
+route review / escalation
+```
+
+The exact services, classes, schemas, and enums remain deliberately unresolved.
+
+---
+
 
 # Decision boundary — conceptual model is design input, not committed code architecture
 
@@ -516,26 +618,23 @@ The architecture should optimize for trustworthy learning, not feature count.
 
 ---
 
-# Decision boundary: evidence-grounded judge authority is not yet architecture
+# Decision boundary: evidence-grounded judge authority is not yet implementation architecture
 
-Ideas such as:
+Concepts such as:
 
 ```text
-PASS
-FAIL
-REVIEW
-UNGRADABLE
-
+scoped PASS / FAIL findings
+NOT_ASSESSED / UNGRADABLE targets
 gradability checks
 evidence authority
 domain-expert escalation
 human-review requirements
 ```
 
-are intentionally documented in `future-ideas.md`.
+are now part of the working conceptual model in `conceptual-model.md`.
 
-They are promising research directions, but they are **not yet committed
-architecture for v1.0**.
+They guide the high-level requirements and the AD-08 responsibility boundary,
+but they are **not yet committed implementation architecture for v1.0**.
 
 This distinction matters.
 
