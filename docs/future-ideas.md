@@ -14,9 +14,33 @@ The current project priority remains:
 
 > **validate the evaluation approach before expanding feature breadth**
 
-See [`gaps.md`](gaps.md) for current validation gaps and
+See [`gaps.md`](gaps.md) for current validation gaps,
 [`known-limitations.md`](known-limitations.md) for the concise present-state
-boundaries.
+boundaries, and [`scope-guardrails.md`](scope-guardrails.md) for the rules that
+keep parked directions from silently becoming active implementation scope.
+
+---
+
+
+## Parking rule
+
+An item in this file is relevant enough to retain, but not justified for current
+implementation.
+
+Before moving any direction from this document into the roadmap, apply the
+expansion gate from `scope-guardrails.md`:
+
+```text
+Which risk or HLR does it address?
+Which claim requires it?
+What is the smallest measurable behaviour?
+What evidence will validate it?
+Can it remain manual or metadata for now?
+Does it create a different product or workflow?
+What current work will it displace?
+```
+
+Conceptual relevance alone is not an implementation decision.
 
 ---
 

@@ -1176,7 +1176,67 @@ Project and evaluation claims shall be bounded by:
 
 ---
 
-## 13. What is deliberately unresolved
+
+## 13. Scope discipline — broad understanding, narrow implementation
+
+The conceptual model is intentionally broader than the next implementation
+slice.
+
+Its purpose is to expose the real conditions required for a credible verdict,
+including conditions that may remain:
+
+```text
+manual inputs
+documented limitations
+future research
+human responsibilities
+external domain ownership
+```
+
+A concept appearing in this model does not automatically become:
+
+- a Pre-v1.0 capability
+- a release blocker
+- a new module
+- a commitment to full automation
+
+The project applies:
+
+> **Understand broadly. Implement narrowly.**
+
+and:
+
+> **Validation before expansion.**
+
+Examples:
+
+```text
+Evidence provenance
+→ conceptually required
+→ may initially be explicit metadata
+→ does not yet require an evidence-management platform
+
+Human escalation
+→ conceptually required
+→ may initially be a structured disposition
+→ does not yet require a review workflow product
+
+Evaluator authority
+→ must be bounded
+→ may be constrained and validated externally
+→ cannot be solved by pretending to control model cognition
+```
+
+The protected project boundary is a focused evaluation framework skeleton, not a
+complete AI governance, compliance, certification, evidence-management, or
+regulated decision platform.
+
+Detailed product and implementation guardrails are defined in
+`scope-guardrails.md`.
+
+---
+
+## 14. What is deliberately unresolved
 
 This model does not yet define:
 
@@ -1195,7 +1255,7 @@ Those should be derived from validation design, not invented prematurely.
 
 ---
 
-## 14. Next conceptual step
+## 15. Next conceptual step
 
 Before coding the next architecture slice:
 

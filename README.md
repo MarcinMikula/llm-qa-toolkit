@@ -141,6 +141,7 @@ In other words:
 - [`LEARNINGS.md`](LEARNINGS.md) — chronological project reasoning and discoveries
 - [`docs/conceptual-model.md`](docs/conceptual-model.md) — current conceptual model and HLR draft
 - [`docs/architecture-decisions.md`](docs/architecture-decisions.md) — current structural and scope decisions
+- [`docs/scope-guardrails.md`](docs/scope-guardrails.md) — boundaries that prevent conceptual growth from becoming uncontrolled implementation scope
 - [`docs/testing-strategy.md`](docs/testing-strategy.md) — validation levels and claim boundaries
 - [`docs/gaps.md`](docs/gaps.md) — unresolved evidence and validation gaps
 - [`docs/known-limitations.md`](docs/known-limitations.md) — concise present-state limitations
@@ -155,6 +156,37 @@ LLMs are being deployed as customer-facing chatbots in industries where **wrong 
 Standard software testing doesn't apply directly — LLM responses are **non-deterministic, probabilistic, and context-dependent**. You can't assert `response == expected`. You need a testing philosophy built around scoring, tolerance bands, multi-dimensional evaluation, and explicit risk assumptions.
 
 This toolkit demonstrates that philosophy with runnable, domain-oriented test scenarios.
+
+---
+
+
+## Scope discipline
+
+The project is intentionally broader in understanding than in implementation.
+
+Its guardrails are:
+
+> **Understand broadly. Implement narrowly.**
+
+> **Validation before expansion.**
+
+A concept may be important enough to document without becoming a module,
+acceptance criterion, or release blocker.
+
+The project is **not currently attempting to become**:
+
+- a complete AI governance or compliance platform
+- a certification authority
+- a universal model leaderboard
+- an enterprise evidence-management system
+- a human-review case-management product
+- an autonomous regulated decision engine
+
+New capabilities enter implementation only when they support a defined
+evaluation risk, measurable acceptance criteria, and the next evidence-backed
+project claim.
+
+See [`docs/scope-guardrails.md`](docs/scope-guardrails.md).
 
 ---
 

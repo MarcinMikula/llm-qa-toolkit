@@ -30,6 +30,7 @@ See also:
 | AD-06 | Keep project scope as a focused evaluation toolkit / framework skeleton, not a full AI robustness audit platform | Active |
 | AD-07 | Validate evaluator behaviour before expanding to multi-provider benchmarking | Active |
 | AD-08 | Treat the future framework as an evaluation-protocol controller between external examinee and examiner systems | Working direction |
+| AD-09 | Use explicit scope-drift guardrails: conceptual breadth does not automatically become implementation scope | Active |
 
 ---
 
@@ -527,6 +528,103 @@ route review / escalation
 ```
 
 The exact services, classes, schemas, and enums remain deliberately unresolved.
+
+---
+
+
+
+# AD-09 — Conceptual breadth does not automatically become implementation scope
+
+## Status
+
+**Active.**
+
+## Context
+
+The conceptual model now includes evidence provenance, scoped gradability,
+human/domain-expert escalation, evaluator authority, decision integrity, and
+traceable findings.
+
+Each concept is relevant to credible regulated-domain evaluation.
+
+Implementing every consequence would expand the project into adjacent product
+categories such as governance, compliance, evidence management, case
+management, benchmarking, or regulated decision automation.
+
+## Decision
+
+Apply explicit scope-drift guardrails.
+
+```text
+Understand broadly.
+Implement narrowly.
+Validate before expanding.
+```
+
+A documented concept may remain:
+
+```text
+high-level requirement
+manual input
+known limitation
+research question
+future idea
+```
+
+without becoming a current implementation requirement.
+
+## Scope classification
+
+Every new capability shall be classified as:
+
+```text
+NOW
+RECORD
+PARK
+SEPARATE
+```
+
+- `NOW` — necessary for the active validation objective
+- `RECORD` — conceptually required but currently representable through explicit
+  metadata or manual input
+- `PARK` — valuable adjacent direction that is not required for the current
+  evidence-backed claim
+- `SEPARATE` — a different product category or programme
+
+## Expansion gate
+
+A capability should enter implementation only when:
+
+- it maps to a defined risk or HLR
+- the current/planned claim would be materially weaker without it
+- its smallest testable behaviour is defined
+- validation evidence is available or obtainable
+- manual representation is insufficient
+- adding it does not silently create a different product
+- roadmap trade-offs are explicit
+
+## Consequences
+
+The project may document complete conceptual dependencies while implementing
+only a narrow vertical slice.
+
+Examples:
+
+```text
+provenance
+→ metadata before automated source lifecycle
+
+review
+→ disposition before workflow platform
+
+traceability
+→ structured result before enterprise audit system
+
+provider comparison
+→ validated dimension before universal benchmark
+```
+
+The canonical boundary document is `scope-guardrails.md`.
 
 ---
 

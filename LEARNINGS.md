@@ -741,4 +741,208 @@ Wyjaśnia, do czego jej potrzebujemy:
 
 ---
 
+## Scope drift guardrails — dojrzewanie bez odpłynięcia
+
+Po doprecyzowaniu tożsamości projektu pojawiła się kolejna ważna obserwacja.
+
+Projekt dojrzewa dlatego, że odkrywamy kolejne warstwy problemu:
+
+```text
+prompt → answer → score
+```
+
+okazało się niewystarczające, więc pojawiły się:
+
+```text
+Test Basis
+gradability
+evaluator authority
+scoped findings
+evidence provenance
+human review
+claim boundaries
+```
+
+Każde z tych odkryć jest zasadne.
+
+Jednocześnie każde otwiera kolejne sąsiednie systemy:
+
+```text
+provenance
+    → document lifecycle
+        → governance
+
+review
+    → workflow
+        → roles / permissions / SLA
+
+traceability
+    → audit trail
+        → compliance reporting
+```
+
+Wniosek:
+
+> **Dojrzewanie projektu nie może oznaczać automatycznego rozszerzania
+> implementacji o każdą konsekwencję modelu konceptualnego.**
+
+### Ryzyko odpłynięcia
+
+Bez nazwanych granic `llm-qa-toolkit` mógłby stopniowo próbować stać się
+jednocześnie:
+
+- frameworkiem testowym,
+- platformą audytu odporności AI,
+- systemem governance,
+- produktem compliance,
+- repozytorium evidence,
+- workflow dla ekspertów,
+- uniwersalnym benchmarkiem,
+- narzędziem certyfikacyjnym,
+- systemem podejmującym regulowane decyzje.
+
+Każdy kolejny element można logicznie uzasadnić poprzednim.
+
+Ale suma tych elementów tworzyłaby inny produkt i program badawczy o
+niekontrolowanym zakresie.
+
+### Trzy zasady ochronne
+
+Do dwóch wcześniejszych zasad:
+
+> **Never make a stronger claim than the validation level can support.**
+
+> **Validation before expansion.**
+
+dochodzi:
+
+> **Understand broadly. Implement narrowly.**
+
+Po polsku:
+
+> **Problem możemy rozumieć szeroko. Implementować powinniśmy tylko najmniejszy
+> fragment potrzebny do zwalidowania kolejnego claimu.**
+
+### Trzy poziomy nie są synonimami
+
+Przy każdej nowej koncepcji trzeba odróżnić:
+
+```text
+1. Musimy to rozumieć.
+2. Musimy to zapisać.
+3. Musimy to teraz zaimplementować.
+```
+
+Przykład: evidence provenance.
+
+```text
+rozumieć:
+bez source/version/applicability verdict może być niewiarygodny
+
+zapisać:
+provenance należy do Test Basis i HLR
+
+implementować teraz:
+wystarczy jawne metadata supplied by test author
+```
+
+Nie oznacza to jeszcze budowy systemu monitorowania aktów prawnych,
+wersjonowania dokumentów i automatycznego ustalania jurysdykcji.
+
+Podobnie human escalation:
+
+```text
+rozumieć:
+nie każdy przypadek powinien kończyć się automatycznym PASS/FAIL
+
+zapisać:
+wynik musi umożliwiać REVIEW / EXPERT REVIEW / ESCALATION
+
+implementować teraz:
+structured disposition + rationale
+```
+
+Nie oznacza to jeszcze panelu, kolejek, SLA, powiadomień i elektronicznych
+akceptacji.
+
+### Nazwane granice produktu
+
+Ustaliliśmy, że projekt:
+
+- kontroluje evaluation protocol, ale nie cognition evaluatora;
+- używa Test Basis, ale nie staje się właścicielem prawdy domenowej;
+- może reprezentować provenance, ale nie musi od razu budować evidence platform;
+- może wskazać review, ale nie musi budować case-management workflow;
+- produkuje scoped findings, ale nie musi generować jednego uniwersalnego score;
+- może porównywać modele po walidacji pomiaru, ale nie buduje leaderboardu dla
+  samej liczby integracji;
+- automatyzuje ewaluację, ale nie podejmuje regulowanych decyzji produkcyjnych;
+- raportuje evidence i findings, ale nie udaje certyfikacji ani assurance.
+
+### Klasyfikacja nowych pomysłów
+
+Każdy nowy pomysł powinien trafić do jednej z czterech kategorii:
+
+```text
+NOW
+→ wymagany do bieżącego validation objective
+
+RECORD
+→ ważny dla poprawności, ale na razie może być jawnie reprezentowany ręcznie
+
+PARK
+→ wartościowy kierunek przyszły, niewymagany dla obecnego claimu
+
+SEPARATE
+→ zmienia kategorię produktu i powinien być osobnym projektem/programem
+```
+
+To pozwala zachować wartościowe odkrycia bez zamieniania ich w automatyczny
+backlog.
+
+### Expansion gate
+
+Pomysł nie powinien wejść do kodu, dopóki nie odpowiemy:
+
+```text
+Jakie ryzyko lub HLR obsługuje?
+Jaki claim byłby bez niego niewiarygodny?
+Jaki jest najmniejszy testowalny fragment?
+Jakim evidence go zwalidujemy?
+Czy można najpierw reprezentować go ręcznie?
+Czy tworzy nowy produkt, workflow albo odpowiedzialną rolę?
+Co usuwamy lub opóźniamy, aby zrobić na niego miejsce?
+Co spowoduje zatrzymanie lub odrzucenie kierunku?
+```
+
+Brak odpowiedzi oznacza:
+
+```text
+future-ideas.md
+```
+
+a nie:
+
+```text
+src/
+```
+
+### Chroniony kierunek projektu
+
+Chronimy następującą tożsamość:
+
+> **Focused, evidence-grounded evaluation framework skeleton for regulated-domain
+> LLM scenarios, controlling the evaluation protocol, bounding evaluator
+> authority, determining assessment scope, and returning traceable findings
+> without overstating certainty.**
+
+Pełne granice i decision gate są zapisane w `docs/scope-guardrails.md`.
+
+Najważniejsza konkluzja:
+
+> **Conceptual ambition may grow through research. Implementation scope must be
+> earned through validation.**
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —
