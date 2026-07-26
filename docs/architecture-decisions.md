@@ -23,7 +23,7 @@ See also:
 | ID | Decision | Status |
 |---|---|---|
 | AD-01 | Separate test-case data, evaluator logic, and test orchestration | Active |
-| AD-02 | Use scoring and thresholds instead of exact-output assertions | Active |
+| AD-02 | Use scoring and thresholds instead of exact-output assertions where the target is gradable | Active, bounded by AD-10 |
 | AD-03 | Combine deterministic heuristics with LLM-assisted evaluation | Active |
 | AD-04 | Keep mock mode as an intentional permanent validation layer | Active |
 | AD-05 | Treat regression baselines as comparison references, not ground truth | Active |
@@ -31,6 +31,7 @@ See also:
 | AD-07 | Validate evaluator behaviour before expanding to multi-provider benchmarking | Active |
 | AD-08 | Treat the future framework as an evaluation-protocol controller between external examinee and examiner systems | Working direction |
 | AD-09 | Use explicit scope-drift guardrails: conceptual breadth does not automatically become implementation scope | Active |
+| AD-10 | Determine assessment basis, eligibility, and scope before invoking or accepting evaluator judgement | Active |
 
 ---
 
@@ -101,7 +102,22 @@ same useful behaviour.
 
 ## Consequence
 
-The toolkit uses composite scores and category-specific thresholds.
+The current prototype uses composite scores and category-specific thresholds.
+
+Scoring is an evaluation mechanism, not the default conceptual starting point.
+
+It should only be applied after the project can justify:
+
+```text
+assessment target
+Test Basis
+expected behaviour
+gradability
+evaluator scope
+```
+
+A target that is not gradable must not receive a convenient numeric score merely
+because the evaluator can generate one.
 
 However:
 
@@ -625,6 +641,148 @@ provider comparison
 ```
 
 The canonical boundary document is `scope-guardrails.md`.
+
+---
+
+
+
+# AD-10 — Assessment basis, eligibility, and scope precede evaluator judgement
+
+## Status
+
+**Active.**
+
+## Context
+
+The first implementation model centred on:
+
+```text
+candidate response
+        ↓
+heuristic / LLM-as-a-judge
+        ↓
+score
+        ↓
+threshold verdict
+```
+
+This is a useful technical pipeline, but it begins too late in the evaluation
+process.
+
+An evaluator can produce a fluent rationale and parseable score even when:
+
+- the evaluation objective is unclear
+- the stimulus does not exercise the intended risk
+- the expected behaviour is undefined
+- the Test Basis is missing or inapplicable
+- only part of the response is gradable
+- the evaluator lacks sufficient evidence or competence
+- the requested verdict is broader than the available basis
+
+## Decision
+
+Determine the basis, eligibility, and allowed scope of the assessment before
+invoking or accepting substantive evaluator judgement.
+
+Conceptually:
+
+```text
+evaluation objective
+        +
+scenario / stimulus
+        +
+candidate response
+        +
+Test Basis
+        ↓
+assessment eligibility
+and scope determination
+        ↓
+evaluation mechanism
+        ↓
+scoped findings
+```
+
+`LLM-as-a-judge`, deterministic heuristics, scoring, and thresholds remain
+available mechanisms.
+
+They do not define whether the assessment is justified.
+
+## Required conceptual checks
+
+Before accepting substantive findings, the future framework should be able to
+represent or determine:
+
+- evaluation objective
+- risk or requirement under test
+- expected response strategy
+- relevant behavioural constraints
+- required evidence
+- evidence provenance and applicability
+- gradability prerequisites
+- allowed assessment targets
+- evaluator authority boundaries
+
+## Consequences
+
+### Scores are conditional outputs
+
+A numeric score is acceptable only when the scored dimension:
+
+- is defined
+- has an adequate Test Basis
+- is gradable
+- has a validated interpretation
+- stays within evaluator authority
+
+### Ungradable does not mean model failure
+
+Missing evidence may prevent factual-outcome assessment while still allowing
+behavioural assessment.
+
+Example:
+
+```text
+factual premium correctness → NOT_ASSESSED
+unsupported certainty       → FAIL
+response strategy            → FAIL
+```
+
+### Evaluator output requires validation
+
+A parseable answer from the judge is not automatically an acceptable evaluation
+result.
+
+The framework may reject or limit it when:
+
+- assessment prerequisites are missing
+- the finding exceeds the allowed scope
+- evidence does not support the rationale
+- technical status is confused with substantive verdict
+- the evaluator invents missing ground truth
+
+## Relationship to earlier decisions
+
+AD-02 and AD-03 remain valid as implementation mechanisms.
+
+AD-10 bounds them:
+
+```text
+AD-02 / AD-03
+→ how evaluation may be performed
+
+AD-10
+→ whether that evaluation is justified,
+  what it may target,
+  and what it may conclude
+```
+
+## Claim boundary
+
+This decision records the conceptual order.
+
+It does not claim that the current code already implements a complete
+assessment-eligibility engine.
 
 ---
 

@@ -141,6 +141,69 @@ the resulting finding can support the intended claim
 This identity is a target direction, not a claim that all of these capabilities
 already exist in code.
 
+### Central conceptual shift — assessment eligibility before judgement
+
+The project began with a judge-centric implementation model:
+
+```text
+candidate response
+        ↓
+heuristic / LLM evaluator
+        ↓
+score / threshold / verdict
+```
+
+That model remains useful as a description of the current technical prototype.
+
+It is no longer sufficient as the conceptual model.
+
+The framework should first establish:
+
+```text
+what is being tested
+what behaviour is expected
+what Test Basis supports that expectation
+what evidence is available
+which assessment targets are gradable
+what authority the evaluator has
+```
+
+Only then should an evaluator produce findings.
+
+The conceptual order is therefore:
+
+```text
+TEST DEFINITION
+        +
+CANDIDATE RESPONSE
+        +
+TEST BASIS
+        ↓
+ASSESSMENT ELIGIBILITY
+& SCOPE DETERMINATION
+        ↓
+EVALUATION MECHANISM
+        ↓
+SCOPED FINDINGS
+```
+
+This leads to a core distinction:
+
+```text
+LLM-AS-A-JUDGE
+→ one possible evaluation mechanism
+
+ASSESSMENT-GROUNDED METHODOLOGY
+→ determines whether the mechanism has a justified target,
+  sufficient evidence, bounded scope, and authority to judge
+```
+
+Therefore:
+
+> **The project does not begin by asking how to score a response. It begins by
+> asking whether there is a justified assessment to perform, what part is
+> gradable, and what the resulting evidence is allowed to support.**
+
 ---
 
 ## 1. Meta-assumption: the system under evaluation operates in a regulated domain

@@ -1,14 +1,89 @@
 # llm-qa-toolkit [![Tests](https://github.com/MarcinMikula/llm-qa-toolkit/actions/workflows/llm-qa.yml/badge.svg)](https://github.com/MarcinMikula/llm-qa-toolkit/actions) [![Allure Report](https://img.shields.io/badge/Allure-Report-orange)](https://marcinmikula.github.io/llm-qa-toolkit/) [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/) [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-> Working research prototype and technical skeleton for an evidence-grounded LLM evaluation framework in regulated-domain scenarios (telco, banking, insurance, energy).
+> Python toolkit and working research prototype for evidence-grounded LLM evaluation in regulated-domain scenarios — evolving from hallucination, prompt-injection and LLM-as-a-judge experiments toward explicit Test Basis, scoped gradability and bounded evaluator authority.
 
 **[Live Allure Report](https://marcinmikula.github.io/llm-qa-toolkit/)**
 
 ---
 
+## The question this project now asks
+
+The project started as a practical variation on a familiar pattern:
+
+```text
+prompt
+    → LLM response
+        → heuristic / LLM-as-a-judge
+            → score
+                → pytest verdict
+```
+
+That pipeline still exists and remains useful for experimentation with:
+
+- hallucination detection
+- prompt injection
+- response quality
+- LLM-as-a-judge
+- regression testing
+- pytest, CI, mocks, and Allure reporting
+
+But the project has moved to a more fundamental question:
+
+> **Before asking an evaluator to score an answer, do we have a justified basis
+> to evaluate it at all — and what exactly are we allowed to conclude?**
+
+The current research direction asks:
+
+```text
+Is the evaluation objective defined?
+Is the stimulus actually testing the intended risk?
+What Test Basis supports the expected behaviour?
+Should the system answer, clarify, correct, refuse, or escalate?
+Which claims or behaviours are genuinely gradable?
+Is the evidence sufficient, current, and applicable?
+Does the evaluator have authority to judge this target?
+How broad may the final finding or project claim be?
+```
+
+So the project is no longer only about improving an `LLM-as-a-judge` prompt.
+
+Its distinguishing direction is:
+
+> **Evaluate the basis, eligibility, scope, and authority of the judgement before
+> accepting the judgement itself.**
+
+Conceptually:
+
+```text
+NOT ONLY
+
+response
+    → judge
+        → score
+
+BUT
+
+evaluation objective
+    + scenario
+    + candidate response
+    + Test Basis
+        ↓
+assessment eligibility and scope
+        ↓
+bounded evaluator
+        ↓
+scoped, traceable findings
+```
+
+`LLM-as-a-judge` remains one possible evaluation mechanism.
+
+It is not treated as the methodology, the answer key, or the source of truth.
+
+---
+
 ## Project status
 
-**Working technical prototype and skeleton of a future evaluation framework — validation pending.**
+**Working technical prototype of an assessment-grounded LLM evaluation framework — evaluator validation pending.**
 
 The repository currently contains a runnable, risk-oriented LLM evaluation
 pipeline with mock execution, heuristic and LLM-assisted evaluators, regression
@@ -56,9 +131,11 @@ has become broader:
 
 Today, the most accurate description is:
 
-> **A research-oriented evaluation harness and technical framework skeleton,
-> supported by a working conceptual model, lightweight methodology, and
-> high-level requirements for regulated-domain LLM evaluation.**
+> **A research-oriented LLM evaluation harness and framework skeleton that
+> combines runnable hallucination, prompt-injection, response-quality and
+> regression tests with a developing methodology for Test Basis, assessment
+> eligibility, scoped gradability, bounded evaluator authority, and traceable
+> findings.**
 
 The current code is the runnable prototype. The methodology and meta-requirements
 define what a credible future framework would need to control.
@@ -151,14 +228,94 @@ In other words:
 
 ## Why this project exists
 
-LLMs are being deployed as customer-facing chatbots in industries where **wrong answers cause real harm**: a bot that invents an insurance coverage decision, confirms a fake bank transfer, or leaks its system prompt creates legal and financial risk.
+LLMs are being deployed in customer-facing and decision-support scenarios where
+**wrong behaviour can cause real harm**: a system may invent an insurance
+coverage decision, confirm an unsupported bank-transfer status, accept a false
+premise, ignore a material risk factor, or disclose information outside its
+authority.
 
-Standard software testing doesn't apply directly — LLM responses are **non-deterministic, probabilistic, and context-dependent**. You can't assert `response == expected`. You need a testing philosophy built around scoring, tolerance bands, multi-dimensional evaluation, and explicit risk assumptions.
+Traditional software-testing principles still matter:
 
-This toolkit demonstrates that philosophy with runnable, domain-oriented test scenarios.
+```text
+clear objective
+explicit requirement
+controlled input
+known oracle
+evidence
+repeatability
+traceability
+```
+
+What becomes insufficient on its own is the simple exact-output model:
+
+```python
+assert response == expected_response
+```
+
+LLM responses are non-deterministic, semantically variable, and strongly
+dependent on context. But replacing exact assertions with:
+
+```text
+another LLM
++ rubric
++ score
+```
+
+does not automatically create a trustworthy evaluation.
+
+The project therefore combines runnable LLM tests with a developing methodology
+for determining:
+
+- what behaviour is expected
+- what evidence supports that expectation
+- what is actually gradable
+- what the evaluator is competent and authorised to judge
+- how far the resulting finding may be generalised
+
+The implementation began with scores, thresholds, heuristics, and
+LLM-as-a-judge. The research direction is now broader:
+
+> **A verdict is useful only when the evaluation basis, scope, and authority are
+> explicit and defensible.**
 
 ---
 
+
+
+## Mechanism vs methodology
+
+The current code contains:
+
+```text
+heuristics
+regex checks
+LLM-as-a-judge
+scores
+thresholds
+pytest assertions
+```
+
+These are **evaluation mechanisms**.
+
+The developing methodology asks whether those mechanisms are being used in a
+case where a justified judgement is possible.
+
+```text
+MECHANISM
+How is the candidate response examined?
+
+METHODOLOGY
+Why is this examination valid?
+What is the Test Basis?
+What is gradable?
+What evidence is sufficient?
+What may the evaluator conclude?
+```
+
+A more sophisticated judge prompt does not solve a missing oracle, incomplete
+evidence, incorrect applicability, or insufficient evaluator authority.
+
+---
 
 ## Scope discipline
 

@@ -945,4 +945,240 @@ Najważniejsza konkluzja:
 
 ---
 
+## From an LLM-as-a-judge variation to assessment-grounded evaluation
+
+A review of the project's public message exposed an important mismatch.
+
+The current implementation and the earliest README naturally lead an automated
+GitHub classifier — or a human skimming the repository — to describe the project
+as:
+
+```text
+LLM chatbot testing framework
++
+hallucination detection
++
+prompt injection
++
+response scoring
++
+LLM-as-a-judge
++
+pytest regression
+```
+
+That description is not false.
+
+It accurately describes the technical origin of the repository.
+
+It is no longer sufficient to describe the main learning direction.
+
+### The original centre of gravity
+
+The first conceptual model was essentially:
+
+```text
+prompt
+    → candidate response
+        → heuristic / LLM judge
+            → score
+                → threshold
+                    → PASS / FAIL
+```
+
+Most design questions concerned:
+
+- judge prompts
+- scoring dimensions
+- weighted results
+- thresholds
+- deterministic heuristics
+- mocked responses
+- regression comparison
+
+This made the project a relatively thoughtful but still recognisable variation
+on `LLM-as-a-judge`.
+
+### The question that changed the project
+
+Further analysis exposed a prior question:
+
+> **Is there a sufficiently justified object of assessment before we invoke the
+> evaluator?**
+
+That question decomposed into:
+
+```text
+What is the evaluation objective?
+What risk or requirement does the stimulus exercise?
+What behaviour should be expected?
+What Test Basis supports that expectation?
+Is the evidence sufficient and applicable?
+Which parts of the response are gradable?
+Is only behaviour gradable, or also factual outcome?
+Does the evaluator have enough competence and authority?
+What finding can the available evidence support?
+How broad may the project claim be?
+```
+
+The evaluation process therefore cannot begin conceptually with the judge.
+
+It begins with the basis and eligibility of the assessment.
+
+### Mechanism is not methodology
+
+The project now distinguishes:
+
+```text
+EVALUATION MECHANISM
+├── keyword checks
+├── regex
+├── heuristics
+├── LLM-as-a-judge
+├── scores
+└── thresholds
+```
+
+from:
+
+```text
+EVALUATION METHODOLOGY
+├── evaluation objective
+├── risk / requirement
+├── scenario and stimulus
+├── expected response strategy
+├── Test Basis
+├── behavioural constraints
+├── required evidence
+├── gradability prerequisites
+├── evaluator authority
+├── scoped findings
+└── claim boundaries
+```
+
+A better judge prompt may improve one mechanism.
+
+It does not repair:
+
+- a missing oracle
+- an invalid or outdated Test Basis
+- insufficient evidence
+- wrong applicability
+- an ungradable target
+- a competence mismatch
+- an unjustifiably broad verdict
+
+Therefore:
+
+> **LLM-as-a-judge may be part of the implementation, but it is not the
+> evaluation methodology and it is not the source of truth.**
+
+### The new central sequence
+
+The project is moving from:
+
+```text
+response
+    → judge
+        → score
+```
+
+toward:
+
+```text
+evaluation objective
+        +
+scenario and stimulus
+        +
+candidate response
+        +
+Test Basis
+        ↓
+assessment eligibility
+and scope determination
+        ↓
+bounded evaluator
+        ↓
+scoped findings
+        ↓
+evidence-backed claim boundary
+```
+
+The central project question is now:
+
+> **Before accepting a verdict, can we justify that there was something
+> assessable, that the selected target was gradable, and that the evaluator had
+> sufficient basis and authority to judge it?**
+
+### Public communication consequence
+
+The repository should retain mainstream search signals:
+
+```text
+LLM evaluation
+LLM testing
+LLM-as-a-judge
+hallucination detection
+prompt injection
+response quality
+regression testing
+pytest
+AI safety
+```
+
+They describe real code and help humans and automated discovery systems
+understand the category.
+
+But the front door must expose the differentiating layer immediately:
+
+```text
+explicit Test Basis
+assessment eligibility
+scoped gradability
+bounded evaluator authority
+traceable findings
+claim boundaries
+```
+
+Otherwise the most original part of the project remains hidden beneath the most
+common part.
+
+### Current positioning
+
+The project should now be read as:
+
+> **A runnable LLM evaluation prototype that began with LLM-as-a-judge and is
+> developing an assessment-grounded methodology for deciding whether, what, and
+> how an external evaluator may judge.**
+
+This is not a rejection of the existing code.
+
+The code is the experimental baseline that made the deeper limitations visible.
+
+The next implementation decisions should be derived from the new conceptual
+model rather than from the assumption that a more elaborate score is the natural
+endpoint.
+
+### Guardrail
+
+The conceptual shift does not mean that the full methodology must be implemented
+at once.
+
+The existing rules still apply:
+
+> **Understand broadly. Implement narrowly.**
+
+> **Validation before expansion.**
+
+The immediate goal is to identify the smallest measurable slice that proves more
+than:
+
+```text
+the judge returned a parseable score
+```
+
+without pretending to solve complete AI assurance.
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —
