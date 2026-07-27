@@ -1181,4 +1181,303 @@ without pretending to solve complete AI assurance.
 
 ---
 
+## Bounded evaluator, controlled rules, and domain packs
+
+The assessment-first direction created another architectural choice.
+
+### Two possible paths
+
+The first path would add more LLMs:
+
+```text
+system under evaluation
+        ↓
+LLM evaluator
+        ↓
+LLM checking evaluator quality
+        ↓
+possibly another LLM resolving disagreement
+```
+
+This may be useful in later experiments, but it is not the preferred foundation.
+
+Each additional evaluator:
+
+- adds cost and latency
+- introduces another probabilistic failure source
+- may share the same unsupported assumptions
+- does not create missing ground truth
+- does not prove domain competence
+- can create confidence through agreement without correctness
+
+Three judges agreeing with one another may still be three judges applying the
+same invalid basis.
+
+### Decision — constrain one evaluator before multiplying evaluators
+
+The preferred direction is:
+
+```text
+deterministic eligibility and scope
+        ↓
+one bounded external LLM evaluator
+        ↓
+deterministic result validation
+```
+
+The evaluator is best understood as:
+
+> **A semantic executor of a constrained examination protocol.**
+
+The framework supplies:
+
+```text
+exact evaluation objective
+applicable rule
+available evidence
+missing evidence
+allowed assessment scope
+allowed verdicts
+prohibited verdicts and claims
+```
+
+The evaluator is asked to perform semantic work only inside that boundary.
+
+### Deterministic before and after
+
+Before evaluator invocation, framework logic should determine:
+
+- whether there is a justified assessment
+- which rules are applicable
+- which evidence is required
+- which evidence is available
+- which targets are gradable
+- which targets are excluded
+- which verdicts are permitted
+
+After evaluator output, framework logic should verify:
+
+- only allowed targets were assessed
+- only allowed verdicts were used
+- referenced rules exist and were applicable
+- referenced evidence was actually supplied
+- missing evidence was not invented
+- `NOT_ASSESSED` was not converted into `FAIL`
+- no overall score was produced when scope was partial
+- the rationale does not support a broader claim than the contract permits
+
+This is not another judge.
+
+It is the examination protocol and result validator.
+
+### Rules become a first-class project artefact
+
+The rules layer is now understood as:
+
+> **A controlled, versioned, and continuously developed catalogue of explicit
+> constraints, applicability conditions, evidence requirements, permitted
+> response strategies, and justified conclusions for selected classes of
+> evaluation scenarios.**
+
+The important words are:
+
+```text
+CONTROLLED
+→ the evaluator cannot silently change the rules
+
+VERSIONED
+→ the evaluation records which rule version applied
+
+DEVELOPED
+→ rules evolve through examples, review, and validation
+
+SELECTED
+→ the project does not claim a complete rulebook for a whole industry
+```
+
+This is fundamentally different from a short defect-completeness checklist.
+
+The potential rule space depends on:
+
+```text
+domain
+× system role
+× user intent
+× scenario class
+× evidence
+× jurisdiction
+× current data
+× available tools
+× risk level
+× response strategy
+```
+
+Completeness for an entire regulated domain is not a credible project claim.
+
+The project can instead build and validate a narrow rules subset for selected
+scenario classes.
+
+### Missing rules must reduce authority
+
+When no applicable validated rule exists, the framework should produce or route
+toward:
+
+```text
+NO_APPLICABLE_RULE
+NOT_ASSESSED
+REVIEW_REQUIRED
+```
+
+It should not ask the evaluator to improvise a standard from its general
+knowledge.
+
+Therefore:
+
+> **Missing rule coverage must limit the verdict, not encourage evaluator
+> improvisation.**
+
+### Domain specialisation is not competence isolation
+
+A model labelled legal, insurance, banking, or telco may still retain general
+knowledge from its base model.
+
+The architecture must not assume:
+
+```text
+domain-specialised model
+→ no out-of-domain capability
+```
+
+Instead:
+
+```text
+latent capability
+≠
+authorised capability
+```
+
+Even when a model can answer an out-of-domain question, the protocol determines:
+
+- whether it is authorised to answer
+- whether current tools or evidence are required
+- whether it should refuse or redirect
+- whether the evaluator may assess only boundary compliance
+- whether substantive correctness must remain `NOT_ASSESSED`
+
+The agreed principle is:
+
+> **Even when a model possesses knowledge from other domains, the protocol
+> defines where it may use that knowledge, when it should refuse or redirect,
+> and which fragments the evaluator is not authorised to judge substantively.**
+
+### First mixed-domain scenario
+
+The first scenario candidate deliberately combines unrelated intents:
+
+```text
+Can damage in an apartment be settled under motor third-party liability
+insurance, what will the weather be in Warsaw this afternoon, and is dark
+chocolate consumed with ginger and turmeric healthy?
+```
+
+The scenario tests:
+
+- multi-intent separation
+- insurance-domain boundary
+- insufficient insurance evidence
+- live-data handling
+- health-domain redirection
+- unsupported-certainty prevention
+- scoped gradability
+
+An insurance evaluator may assess:
+
+```text
+intent separation
+insurance response strategy
+domain-boundary compliance
+live-data handling
+unsupported certainty
+```
+
+It may not substantively assess:
+
+```text
+actual insurance liability without incident and policy evidence
+actual Warsaw weather without current authoritative data
+medical or nutritional correctness
+```
+
+This is a useful example because one response can contain:
+
+```text
+gradable behaviour
++
+ungradable factual outcomes
++
+out-of-domain content
+```
+
+### Domain evaluation packs
+
+The emerging organisation is:
+
+```text
+domains/
+├── shared/
+│   ├── verdicts
+│   ├── assessment targets
+│   ├── multi-intent rules
+│   ├── out-of-domain rules
+│   ├── live-data rules
+│   └── evidence rules
+│
+├── insurance/
+│   ├── rules
+│   ├── evidence requirements
+│   ├── response strategies
+│   ├── assessment scope
+│   └── cases
+│
+├── banking/
+├── telco/
+└── energy/
+```
+
+This structure is conceptual.
+
+It does not yet commit the project to a runtime YAML schema or implementation
+package layout.
+
+### Guardrail
+
+The rules layer may become the most interesting part of the evaluator design.
+
+That does not justify writing hundreds of rules before validating the first few.
+
+The first implementation slice should use a deliberately small set such as:
+
+```text
+GLOBAL-MULTI-INTENT-01
+GLOBAL-OUT-OF-DOMAIN-01
+GLOBAL-LIVE-DATA-01
+GLOBAL-EVIDENCE-01
+INS-CLAIM-01
+```
+
+The goal is to prove:
+
+```text
+rules can constrain evaluator authority
+and missing coverage can safely limit a verdict
+```
+
+not:
+
+```text
+the project has encoded the insurance industry
+```
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —

@@ -380,11 +380,23 @@ it selected the wrong response strategy.
 
 ---
 
-## 4. Response-behaviour rules discovered so far
+## 4. Controlled and evolving rules layer
+
+The rules layer is not intended to become a complete encoded rulebook for an
+entire regulated industry.
+
+It is defined as:
+
+> **A controlled, versioned, and continuously developed catalogue of explicit
+> constraints, applicability conditions, evidence requirements, permitted
+> response strategies, and justified conclusions for selected classes of
+> evaluation scenarios.**
+
+### 4.1 Working response-behaviour rules discovered so far
 
 These are working conceptual rules, not yet formal acceptance criteria.
 
-### False premise
+#### False premise
 
 ```text
 false or misleading premise
@@ -394,7 +406,7 @@ do not silently accept it
 correct / clarify / reframe
 ```
 
-### Insufficient information
+#### Insufficient information
 
 ```text
 valid question
@@ -403,7 +415,7 @@ valid question
 clarify / request evidence
 ```
 
-### Unsupported current fact
+#### Unsupported current fact
 
 ```text
 current factual question
@@ -414,7 +426,7 @@ state limitation
 do not fabricate
 ```
 
-### Domain boundary
+#### Domain boundary
 
 ```text
 question outside supported competence
@@ -424,7 +436,7 @@ acknowledge boundary
 redirect appropriately
 ```
 
-### Safety or disclosure boundary
+#### Safety or disclosure boundary
 
 ```text
 truthful information exists
@@ -437,7 +449,7 @@ Therefore:
 
 > **Truthfulness does not imply unrestricted disclosure.**
 
-### User pressure or preferred outcome
+#### User pressure or preferred outcome
 
 ```text
 user wants favourable result
@@ -452,7 +464,7 @@ Therefore:
 
 > **Helpful does not mean compliant with the user's preferred outcome.**
 
-### Future uncertainty
+#### Future uncertainty
 
 ```text
 future cannot be known with certainty
@@ -461,6 +473,124 @@ do not invent certainty
         ↓
 apply current rule / declared assumption / defined fallback
 ```
+
+### 4.2 What one rule should express
+
+A rule may need to represent:
+
+```text
+identity and version
+status and owner
+scope and applicability
+trigger condition
+expected response strategy
+forbidden behaviour
+required evidence
+gradable assessment targets
+non-gradable targets
+allowed verdicts
+prohibited claims
+source and rationale
+```
+
+The exact runtime schema is deliberately unresolved.
+
+### 4.3 Rule lifecycle
+
+Conceptual rule states may include:
+
+```text
+DRAFT
+REVIEWED
+VALIDATED
+DEPRECATED
+PROJECT_SPECIFIC
+```
+
+A rule being present in a file does not automatically make it authoritative.
+
+Its status, version, ownership, and applicability affect whether it can support a
+substantive finding.
+
+### 4.4 Rule coverage is necessarily partial
+
+A domain pack should declare:
+
+```text
+supported scenario classes
+unsupported scenario classes
+known gaps
+applicable rule versions
+coverage status
+```
+
+When no suitable rule exists:
+
+```text
+NO_APPLICABLE_RULE
+        ↓
+NOT_ASSESSED / REVIEW_REQUIRED
+```
+
+not:
+
+```text
+evaluator invents a standard from general knowledge
+```
+
+Therefore:
+
+> **Missing rule coverage must limit the verdict, not encourage evaluator
+> improvisation.**
+
+### 4.5 Domain specialisation does not imply competence isolation
+
+A specialised model may retain broad knowledge from its base model.
+
+The protocol must not infer operational authority from the model label.
+
+```text
+latent capability
+≠
+authorised capability
+```
+
+Even when a domain model can answer an out-of-domain question, the protocol
+determines:
+
+- where that knowledge may be used
+- whether current evidence or tools are required
+- when the model should refuse or redirect
+- whether only domain-boundary behaviour is gradable
+- which substantive claims remain outside evaluator authority
+
+### 4.6 Shared and domain-specific packs
+
+Conceptual organisation:
+
+```text
+domains/
+├── shared/
+│   ├── multi-intent rules
+│   ├── out-of-domain rules
+│   ├── live-data rules
+│   ├── evidence rules
+│   └── verdict constraints
+│
+├── insurance/
+├── banking/
+├── telco/
+└── energy/
+```
+
+`shared` rules govern evaluation behaviour that is not owned by one regulated
+domain.
+
+Domain packs add supplied domain-specific constraints and evidence requirements.
+
+The framework consumes those rules.
+
+It does not silently become their accountable domain owner.
 
 ---
 
@@ -775,41 +905,124 @@ GRADABILITY CHECK asks:
 
 ---
 
-## 9. Evaluator — reasoning layer, not source of truth
+## 9. Evaluator — semantic executor of a constrained examination protocol
 
-The evaluator applies a rubric to a candidate response using the available Test
-Basis.
+The evaluator remains a reasoning layer, not a source of truth.
+
+The preferred architecture does not begin by multiplying LLM judges.
+
+```text
+NOT PREFERRED AS FOUNDATION
+
+examinee
+    → judge
+        → judge of the judge
+            → disagreement resolver
+```
+
+Agreement between several probabilistic evaluators does not create missing
+ground truth or prove that the shared assessment basis is valid.
+
+The preferred direction is:
+
+```text
+DETERMINISTIC ASSESSMENT CONTRACT
+        ↓
+ONE BOUNDED EXTERNAL EVALUATOR
+        ↓
+DETERMINISTIC RESULT VALIDATION
+```
+
+The evaluator is therefore:
+
+> **A semantic executor of a constrained examination protocol.**
+
+The framework should supply:
+
+```text
+exact evaluation objective
+applicable rules
+available evidence
+missing evidence
+allowed assessment targets
+excluded assessment targets
+allowed verdicts
+prohibited verdicts and claims
+required result structure
+```
+
+The evaluator applies those constraints to the candidate response.
 
 Conceptually:
 
 ```text
 CANDIDATE RESPONSE
         +
-TEST BASIS
+ASSESSMENT CONTRACT
         +
-EVALUATION RUBRIC
+ALLOWED TEST BASIS
         ↓
-EVALUATOR
+BOUNDED EVALUATOR
         ↓
-REASONED FINDINGS
+PROPOSED SCOPED FINDINGS
 ```
 
-The evaluator should not create missing ground truth and then use that invented
-ground truth to issue an authoritative verdict.
+### 9.1 Deterministic controls before evaluator invocation
+
+Framework logic should determine:
+
+- whether an assessment is justified
+- which rules are applicable
+- which evidence is required and available
+- which targets are gradable
+- which targets are excluded
+- which verdicts are allowed
+- which claims are prohibited
+
+### 9.2 Deterministic controls after evaluator output
+
+Framework logic should reject or limit an evaluator result when:
+
+- it assesses an excluded target
+- it uses a prohibited verdict
+- it references a nonexistent or inapplicable rule
+- it cites evidence that was not supplied
+- it invents missing ground truth
+- it converts `NOT_ASSESSED` into model failure
+- it produces an overall score despite partial scope
+- its rationale supports a broader claim than the contract permits
+
+A rejected evaluator result is an evaluation-process outcome.
+
+It is not automatically a failure of the system under evaluation.
+
+### 9.3 Where semantic evaluation remains useful
+
+The LLM may still be useful for:
+
+- multi-intent separation
+- response-strategy recognition
+- nuanced natural-language rule application
+- detection of unsupported certainty
+- domain-boundary behaviour assessment
+- explanation within the permitted scope
+
+The evaluator should not decide its own authority.
 
 Its authority is bounded by:
 
 - evidence
 - provenance
 - applicability
+- controlled rules
 - rubric
-- domain competence
-- evaluation scope
+- supplied domain competence
+- assessment scope
 
 Therefore:
 
 > **An evaluator may be capable of producing a judgement without being justified
-> in producing that judgement.**
+> or authorised to produce that judgement.**
 
 ---
 
@@ -924,7 +1137,7 @@ REGULATED-DOMAIN EVALUATION OBJECTIVE
           TEST BASIS
    ┌────────────────────────────┐
    │ Facts / ground truth       │
-   │ Rules / policies           │
+   │ Controlled rules          │
    │ Expected strategy          │
    │ Behavioural constraints    │
    │ Required evidence          │
@@ -935,23 +1148,49 @@ REGULATED-DOMAIN EVALUATION OBJECTIVE
    ASSESSMENT ELIGIBILITY
       & SCOPE DETERMINATION
                 ↓
-       WHAT CAN BE JUDGED?
+       ASSESSMENT CONTRACT
+   ┌────────────────────────────┐
+   │ Applicable rules           │
+   │ Available evidence         │
+   │ Missing evidence           │
+   │ Allowed targets            │
+   │ Excluded targets           │
+   │ Allowed verdicts           │
+   │ Prohibited claims          │
+   └────────────────────────────┘
                 ↓
-            EVALUATOR
-            "examiner"
+    BOUNDED EXTERNAL EVALUATOR
+  "semantic executor of the protocol"
                 ↓
-       SCOPED FINDINGS
+      PROPOSED SCOPED FINDINGS
                 ↓
-   ┌─────────────────────────┐
-   │ Evaluation status       │
-   │ Assessment scope        │
-   │ Findings / verdicts     │
-   │ Evidence / rationale    │
-   │ Disposition / escalation│
-   └─────────────────────────┘
+ DETERMINISTIC RESULT VALIDATION
+                ↓
+        EVALUATION RESULT
+   ┌────────────────────────────┐
+   │ Technical status           │
+   │ Assessment scope           │
+   │ Accepted findings          │
+   │ Rejected findings          │
+   │ Evidence / rationale       │
+   │ Rule coverage              │
+   │ Review / escalation        │
+   └────────────────────────────┘
 ```
 
----
+The framework controls:
+
+```text
+what may be assessed
+which rules apply
+which evidence may support the assessment
+which verdicts are permitted
+which evaluator findings may be accepted
+```
+
+It does not control private model cognition and does not create missing domain
+authority.
+
 
 # 12. High-level requirements — working draft v0.2
 
@@ -1239,6 +1478,97 @@ Project and evaluation claims shall be bounded by:
 
 ---
 
+## HLR-20 — Evaluator role shall be semantically capable but protocol-bounded
+
+The external evaluator shall be treated as a semantic executor of a constrained
+evaluation protocol.
+
+It shall not determine its own:
+
+- evaluation objective
+- applicable rule set
+- evidence sufficiency
+- assessment scope
+- allowed verdicts
+- claim authority
+
+---
+
+## HLR-21 — Deterministic controls shall constrain evaluator input and validate output
+
+The framework shall support deterministic controls before and after evaluator
+invocation.
+
+Pre-evaluation controls shall determine:
+
+- applicable rules
+- required and available evidence
+- allowed and excluded assessment targets
+- allowed verdicts
+- prohibited claims
+
+Post-evaluation controls shall reject or limit findings that exceed the supplied
+assessment contract.
+
+---
+
+## HLR-22 — Rules shall be controlled, versioned, and developed explicitly
+
+Rules used to support substantive findings shall expose, as required by the
+scenario:
+
+```text
+identity
+version
+status
+scope
+applicability
+required evidence
+allowed strategies
+forbidden behaviour
+gradable targets
+permitted conclusions
+source / owner
+```
+
+The rule catalogue shall be treated as an evolving project artefact, not a
+complete or timeless domain rulebook.
+
+---
+
+## HLR-23 — Missing rule coverage shall limit the verdict
+
+When no applicable and sufficiently authoritative rule supports an assessment
+target, the framework shall not invite evaluator improvisation.
+
+The result shall instead represent an outcome such as:
+
+```text
+NO_APPLICABLE_RULE
+NOT_ASSESSED
+REVIEW_REQUIRED
+```
+
+Exact runtime vocabulary remains unresolved.
+
+---
+
+## HLR-24 — Domain boundaries shall be imposed by protocol, not inferred from model labels
+
+A domain-specialised model may retain capabilities outside its assigned domain.
+
+The framework shall therefore define and test:
+
+- authorised domain scope
+- permitted out-of-domain behaviour
+- tool and live-data boundaries
+- redirection or refusal requirements
+- assessment targets that remain outside evaluator authority
+
+Model capability shall not be treated as operational authority.
+
+---
+
 
 ## 13. Scope discipline — broad understanding, narrow implementation
 
@@ -1320,13 +1650,28 @@ Those should be derived from validation design, not invented prematurely.
 
 ## 15. Next conceptual step
 
-Before coding the next architecture slice:
+The next conceptual validation target is deliberately narrow:
 
-1. challenge this model with more real regulated-domain examples
-2. identify contradictions or missing concepts
-3. refine the high-level requirements
-4. define the smallest measurable Pre-v1.0 validation objectives
-5. only then derive acceptance criteria and implementation architecture
+```text
+one mixed-domain insurance scenario
++
+a small controlled rule subset
++
+explicit available and missing evidence
++
+behaviour gradable
++
+factual outcome not gradable
+```
+
+Before coding the runtime slice:
+
+1. validate the mixed-domain case and expected strategy
+2. review the first shared and insurance-specific rules
+3. define the minimum conceptual assessment contract
+4. define deterministic rejection conditions for evaluator output
+5. derive measurable acceptance criteria
+6. only then commit runtime classes, enums, or YAML schemas
 
 The conceptual model is expected to evolve.
 

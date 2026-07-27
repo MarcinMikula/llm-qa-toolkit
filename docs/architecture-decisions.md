@@ -32,6 +32,8 @@ See also:
 | AD-08 | Treat the future framework as an evaluation-protocol controller between external examinee and examiner systems | Working direction |
 | AD-09 | Use explicit scope-drift guardrails: conceptual breadth does not automatically become implementation scope | Active |
 | AD-10 | Determine assessment basis, eligibility, and scope before invoking or accepting evaluator judgement | Active |
+| AD-11 | Prefer deterministic protocol boundaries around one bounded evaluator over recursive LLM judge chains | Active direction |
+| AD-12 | Treat rules as a controlled, versioned, evolving catalogue organised into shared and domain evaluation packs | Active direction |
 
 ---
 
@@ -783,6 +785,248 @@ This decision records the conceptual order.
 
 It does not claim that the current code already implements a complete
 assessment-eligibility engine.
+
+---
+
+
+
+# AD-11 — Prefer deterministic protocol boundaries around one bounded evaluator
+
+## Status
+
+**Active direction for the next validation slice.**
+
+## Context
+
+A judge-centric architecture can grow recursively:
+
+```text
+system under evaluation
+        ↓
+LLM evaluator
+        ↓
+LLM checking evaluator quality
+        ↓
+LLM resolving evaluator disagreement
+```
+
+Additional judges may be useful for later comparative experiments.
+
+They do not automatically solve:
+
+- missing ground truth
+- missing or inapplicable rules
+- insufficient evidence
+- evaluator competence mismatch
+- unjustified assessment scope
+- shared systematic bias
+
+Agreement between evaluators is not equivalent to correctness.
+
+## Decision
+
+Use deterministic framework logic to define the assessment contract before
+invoking one external bounded evaluator.
+
+Then validate the evaluator output deterministically.
+
+```text
+ASSESSMENT ELIGIBILITY
+        ↓
+ASSESSMENT CONTRACT
+        ↓
+ONE BOUNDED LLM EVALUATOR
+        ↓
+RESULT VALIDATION
+        ↓
+SCOPED FINDINGS
+```
+
+The evaluator is treated as:
+
+> **A semantic executor of a constrained examination protocol.**
+
+## Deterministic responsibilities
+
+Before evaluator invocation:
+
+- select applicable rules
+- identify required and available evidence
+- determine allowed and excluded targets
+- constrain allowed verdicts
+- define prohibited claims
+
+After evaluator response:
+
+- reject out-of-scope findings
+- reject unsupported evidence references
+- reject invented rule IDs
+- reject prohibited verdicts
+- prevent `NOT_ASSESSED` from becoming model failure
+- prevent partial assessment from becoming an unsupported overall score
+
+## LLM responsibilities
+
+Use the evaluator for semantic tasks such as:
+
+- multi-intent separation
+- response-strategy classification
+- nuanced rule application
+- unsupported-certainty detection
+- explanation within the permitted scope
+
+## Consequence
+
+The project does not need another LLM merely to decide whether the first
+evaluator was allowed to assess a target.
+
+Multi-judge comparison remains a later validation experiment, not the primary
+control mechanism.
+
+## Claim boundary
+
+This decision defines architectural responsibility.
+
+It does not claim that deterministic validation can prove the evaluator's private
+reasoning was correct.
+
+---
+
+# AD-12 — Rules are a controlled, versioned, evolving catalogue
+
+## Status
+
+**Active conceptual direction. Runtime schema not yet committed.**
+
+## Context
+
+The rules layer may become the most distinctive part of the project.
+
+Unlike a short completeness checklist, the potential rule space depends on:
+
+```text
+domain
+system role
+scenario class
+user intent
+available evidence
+jurisdiction
+current data
+allowed tools
+risk level
+response strategy
+```
+
+A complete encoded rulebook for insurance, banking, telco, or energy is not a
+credible solo-project commitment.
+
+## Decision
+
+Treat rules as:
+
+> **A controlled, versioned, and continuously developed catalogue of explicit
+> constraints, applicability conditions, evidence requirements, permitted
+> response strategies, and justified conclusions for selected classes of
+> evaluation scenarios.**
+
+Rules should be organised conceptually into:
+
+```text
+shared evaluation rules
++
+domain-specific evaluation packs
+```
+
+Possible shared categories:
+
+- multi-intent handling
+- out-of-domain behaviour
+- live-data handling
+- evidence sufficiency
+- verdict constraints
+- claim boundaries
+
+Possible domain-pack content:
+
+- domain rules
+- evidence requirements
+- response strategies
+- assessment scope
+- controlled cases
+
+## Rule authority
+
+Rule metadata may need to express:
+
+```text
+id
+version
+status
+owner / source
+scope
+applicability
+trigger
+required evidence
+allowed strategy
+forbidden behaviour
+gradable targets
+permitted conclusions
+```
+
+Conceptual lifecycle states may include:
+
+```text
+DRAFT
+REVIEWED
+VALIDATED
+DEPRECATED
+PROJECT_SPECIFIC
+```
+
+## Missing coverage
+
+No applicable rule shall not be treated as permission for evaluator
+improvisation.
+
+It should limit the result toward:
+
+```text
+NO_APPLICABLE_RULE
+NOT_ASSESSED
+REVIEW_REQUIRED
+```
+
+## Domain boundary
+
+A model may retain knowledge outside its specialised domain.
+
+Therefore:
+
+```text
+latent capability
+≠
+authorised capability
+```
+
+Operational and evaluation boundaries must be imposed by the protocol rather
+than inferred from the model label.
+
+## Consequence
+
+The project may build a small validated rule subset without claiming complete
+domain coverage.
+
+The first pack should prove rule applicability, scoped authority, and safe
+handling of missing coverage.
+
+It should not attempt to encode an industry.
+
+## Claim boundary
+
+This decision does not commit the project to a final directory layout, YAML
+schema, rules engine, or external policy-ingestion platform.
+
+Those remain downstream implementation decisions.
 
 ---
 

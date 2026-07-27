@@ -564,6 +564,137 @@ A small validated slice is stronger than a broad unvalidated architecture.
 
 ---
 
+
+## SG-15 — Do not use recursive judge chains as a substitute for assessment basis
+
+### Inside the boundary
+
+The project may later compare:
+
+- evaluator providers
+- evaluator models
+- independent judge outputs
+- disagreement patterns
+
+### Outside the boundary
+
+The project should not treat:
+
+```text
+more judges
+more votes
+more agreement
+```
+
+as a substitute for:
+
+```text
+valid Test Basis
+applicable rules
+sufficient evidence
+bounded scope
+external validation
+```
+
+### Why
+
+Several evaluators can share the same unsupported assumption.
+
+Consensus is not automatically correctness.
+
+The primary control mechanism should be deterministic assessment boundaries
+around a bounded evaluator.
+
+---
+
+## SG-16 — Domain packs cover selected scenario classes, not complete industries
+
+### Inside the boundary
+
+A domain pack may define and validate a narrow subset such as:
+
+```text
+mixed-domain questions
+insufficient evidence
+unsupported certainty
+live-data requests
+selected coverage-information scenarios
+```
+
+### Outside the boundary
+
+A pack does not claim to encode:
+
+- all insurance law
+- all product wording
+- all underwriting logic
+- all banking regulation
+- all telco processes
+- all energy-market rules
+
+### Why
+
+The rule space is open-ended, versioned, jurisdiction-dependent, and owned by
+accountable domain specialists.
+
+Selected validated coverage is stronger than fictional completeness.
+
+---
+
+## SG-17 — Missing rule coverage limits the verdict
+
+When no applicable sufficiently authoritative rule exists, the framework should
+represent the gap explicitly.
+
+Possible conceptual outcomes:
+
+```text
+NO_APPLICABLE_RULE
+NOT_ASSESSED
+REVIEW_REQUIRED
+```
+
+The evaluator must not be invited to invent an evaluation standard from general
+model knowledge.
+
+### Why
+
+A missing rule is a limitation of the evaluation basis.
+
+It is not evidence that the system under evaluation failed.
+
+---
+
+## SG-18 — Rule growth must be controlled and evidence-led
+
+New rules should not enter validated use merely because they are plausible.
+
+Rule development should preserve, as applicable:
+
+```text
+source / owner
+version
+status
+scope
+applicability
+test cases
+review evidence
+known gaps
+```
+
+A first implementation slice should validate a few rules deeply rather than add
+a broad unreviewed catalogue.
+
+### Why
+
+Rule count is not evidence of rule quality.
+
+An expanding unvalidated catalogue would recreate the same problem as an
+unvalidated evaluator: confident outputs built on weak foundations.
+
+---
+
+
 # 8. Scope classification model
 
 Every newly discovered idea should be classified before implementation.
@@ -660,6 +791,10 @@ The project may be drifting when:
 
 - the architecture grows faster than evaluator-validation evidence
 - new providers are added without a measurement question
+- additional judges are added without an external correctness basis
+- rule count grows faster than rule review and validation evidence
+- domain packs are described as complete industry knowledge
+- missing rule coverage is hidden by evaluator improvisation
 - dashboards appear before trustworthy findings
 - workflows are built before review rules are validated
 - domain content is generated internally without accountable ownership
@@ -704,8 +839,9 @@ The protected direction of `llm-qa-toolkit` is:
 
 > **A focused, evidence-grounded evaluation framework skeleton for
 > regulated-domain LLM scenarios, designed to control the evaluation protocol,
-> bound evaluator authority, determine assessment scope, and return traceable
-> findings without overstating certainty.**
+> use a controlled and evolving rules layer, bound evaluator authority,
+> determine assessment scope, and return traceable findings without overstating
+> certainty.**
 
 The project may continue to mature conceptually.
 

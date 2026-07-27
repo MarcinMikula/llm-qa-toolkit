@@ -217,6 +217,7 @@ In other words:
 
 - [`LEARNINGS.md`](LEARNINGS.md) — chronological project reasoning and discoveries
 - [`docs/conceptual-model.md`](docs/conceptual-model.md) — current conceptual model and HLR draft
+- [`docs/rules-and-domain-packs.md`](docs/rules-and-domain-packs.md) — controlled rules layer, bounded evaluator protocol, and domain-pack model
 - [`docs/architecture-decisions.md`](docs/architecture-decisions.md) — current structural and scope decisions
 - [`docs/scope-guardrails.md`](docs/scope-guardrails.md) — boundaries that prevent conceptual growth from becoming uncontrolled implementation scope
 - [`docs/testing-strategy.md`](docs/testing-strategy.md) — validation levels and claim boundaries
@@ -317,6 +318,113 @@ evidence, incorrect applicability, or insufficient evaluator authority.
 
 ---
 
+
+## Bounded evaluator and controlled rules layer
+
+Two architectural paths are possible:
+
+```text
+PATH A
+LLM under evaluation
+    → LLM judge
+        → another LLM checking the judge
+            → another probabilistic layer
+
+PATH B
+deterministic assessment contract
+    → one bounded LLM evaluator
+        → deterministic result validation
+```
+
+The project chooses **Path B** as the primary direction.
+
+More judges increase cost and may increase apparent confidence without creating
+missing ground truth, evidence, or domain authority.
+
+The external evaluator is therefore treated as:
+
+> **A semantic executor of a constrained examination protocol.**
+
+The framework should tell it:
+
+```text
+Here is the exact evaluation objective.
+Here is the applicable rule.
+Here is the available evidence.
+Here is the missing evidence.
+Here is the allowed assessment scope.
+Here are the prohibited verdicts and claims.
+Evaluate only this target.
+```
+
+Deterministic framework logic should control:
+
+- assessment eligibility
+- applicable rules
+- required and available evidence
+- allowed assessment targets
+- allowed verdicts
+- prohibited claims
+- result-schema validation
+- rejection of out-of-scope findings
+
+The LLM should be used where semantic interpretation is actually necessary:
+
+- intent separation
+- response-strategy recognition
+- nuanced policy-language interpretation
+- unsupported-certainty detection
+- explanation within the permitted scope
+
+### Rules are not a complete domain rulebook
+
+The rules layer is defined as:
+
+> **A controlled, versioned, and continuously developed catalogue of explicit
+> constraints, applicability conditions, evidence requirements, permitted
+> response strategies, and justified conclusions for selected classes of
+> evaluation scenarios.**
+
+It is intentionally incomplete.
+
+Missing rule coverage must limit the verdict:
+
+```text
+NO_APPLICABLE_RULE
+NOT_ASSESSED
+REVIEW_REQUIRED
+```
+
+It must not encourage the evaluator to invent its own evaluation standard.
+
+The planned organisation is:
+
+```text
+domains/
+├── shared/
+│   ├── multi_intent_rules
+│   ├── out_of_domain_rules
+│   ├── live_data_rules
+│   ├── evidence_rules
+│   └── verdict_constraints
+│
+├── insurance/
+├── banking/
+├── telco/
+└── energy/
+```
+
+Domain specialisation does not guarantee competence isolation.
+
+A model may possess knowledge outside its assigned domain. The protocol must
+therefore define where that knowledge may be used, when the model should refuse
+or redirect, and which out-of-domain claims the evaluator is not authorised to
+judge substantively.
+
+See [`docs/rules-and-domain-packs.md`](docs/rules-and-domain-packs.md).
+
+---
+
 ## Scope discipline
 
 The project is intentionally broader in understanding than in implementation.
@@ -385,6 +493,35 @@ See [`docs/scope-guardrails.md`](docs/scope-guardrails.md).
 │               pytest assert + Allure Report             │
 └─────────────────────────────────────────────────────────┘
 ```
+
+### Next target slice — constrained assessment before scoring
+
+The following is a target direction, not a claim about the current runtime:
+
+```text
+EVALUATION CASE
+    + supplied Test Basis
+    + controlled rules
+        ↓
+DETERMINISTIC ASSESSMENT CONTRACT
+        ↓
+allowed targets / excluded targets
+        ↓
+ONE BOUNDED EXTERNAL EVALUATOR
+        ↓
+DETERMINISTIC RESULT VALIDATOR
+        ↓
+SCOPED FINDINGS
+```
+
+The first slice should prove that the framework can:
+
+```text
+allow behavioural assessment
+while blocking unsupported factual assessment
+```
+
+without invoking another LLM to decide whether the evaluator may judge.
 
 ---
 
@@ -627,6 +764,9 @@ Current validation priorities:
   borderline, ambiguous, and insufficient-evidence cases
 - ⏳ Define the minimum evidence and test basis required for different verdicts
 - ⏳ Clarify gradability and the boundary of automated judge authority
+- ⏳ Define the first controlled, versioned rules subset for selected scenario classes
+- ⏳ Validate deterministic pre-evaluation constraints and post-evaluation result checks
+- ⏳ Exercise the model on one mixed-domain insurance scenario with partial gradability
 - ⏳ Review threshold and scoring assumptions against validation evidence
 - ⏳ Complete a small, controlled live-model validation experiment
 - ⏳ Refine high-level requirements into measurable v1.0 acceptance criteria
