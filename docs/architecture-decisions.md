@@ -15,6 +15,8 @@ See also:
 - [`testing-strategy.md`](testing-strategy.md) — validation levels and claim boundaries
 - [`future-ideas.md`](future-ideas.md) — deliberately deferred research directions
 - [`conceptual-model.md`](conceptual-model.md) — working conceptual model and HLR draft
+- [`integration-architecture.md`](integration-architecture.md) — external-system ports, adapters, replay, and validation boundaries
+- [`roadmap.md`](roadmap.md) — staged implementation and validation path
 
 ---
 
@@ -34,6 +36,8 @@ See also:
 | AD-10 | Determine assessment basis, eligibility, and scope before invoking or accepting evaluator judgement | Active |
 | AD-11 | Prefer deterministic protocol boundaries around one bounded evaluator over recursive LLM judge chains | Active direction |
 | AD-12 | Treat rules as a controlled, versioned, evolving catalogue organised into shared and domain evaluation packs | Active direction |
+| AD-13 | Make the evaluation core depend on normalised examinee/evaluator contracts rather than a specific transport or provider | Active direction |
+| AD-14 | Treat replay, stubs, and controlled capture as first-class validation modes; reserve live models for scoped evidence gathering | Active direction |
 
 ---
 
@@ -1027,6 +1031,189 @@ This decision does not commit the project to a final directory layout, YAML
 schema, rules engine, or external policy-ingestion platform.
 
 Those remain downstream implementation decisions.
+
+---
+
+
+
+# AD-13 — Integration core depends on contracts, not transports
+
+## Status
+
+**Active direction for the runtime bridge.**
+
+## Context
+
+The project has not yet selected final examinee chatbots or evaluator models.
+
+Available systems may expose:
+
+- HTTP APIs
+- vendor SDKs
+- Python callables
+- CLI tools
+- browser-only chat interfaces
+- manually captured responses
+- previously recorded fixtures
+
+Defining integration as an API call would couple the evaluation architecture to
+one access method and make non-API validation unnecessarily difficult.
+
+## Decision
+
+Model two separate ports:
+
+```text
+ExamineePort
+EvaluatorPort
+```
+
+and normalised envelopes:
+
+```text
+CandidateResponse
+ProposedEvaluatorResult
+```
+
+The core pipeline shall depend on those contracts.
+
+Transport-specific adapters may include:
+
+```text
+API
+Python callable
+CLI / subprocess
+browser / Playwright
+replay file
+manual capture
+```
+
+## Examinee responsibility
+
+The examinee side:
+
+- accepts a test stimulus
+- invokes or accesses the system under evaluation
+- captures content and available evidence
+- preserves metadata
+- reports technical status
+
+## Evaluator responsibility
+
+The evaluator side:
+
+- receives the candidate response
+- receives the bounded assessment contract
+- invokes the semantic evaluator
+- normalises proposed findings
+- preserves raw output and technical status
+
+## Consequence
+
+Core evaluation logic remains independent from:
+
+- authentication method
+- vendor SDK
+- browser selectors
+- process invocation
+- file format
+- provider-specific response shape
+
+Browser automation, when needed, stays inside a system-specific adapter.
+
+## Claim boundary
+
+Transport neutrality does not mean every adapter will be implemented.
+
+Adapters are added only when required by a concrete validation experiment.
+
+---
+
+# AD-14 — Replay and stubs are first-class validation modes
+
+## Status
+
+**Active direction for the first runtime slice.**
+
+## Context
+
+Using two live paid or externally hosted LLMs for every development and CI run
+would be expensive, non-deterministic, and unnecessary for validating most
+framework logic.
+
+The project must distinguish:
+
+```text
+framework correctness
+evaluator effectiveness
+examinee behaviour
+integration reliability
+```
+
+## Decision
+
+Use replay fixtures, controlled captures, fakes, and stubs as first-class
+validation modes.
+
+The first assessment-grounded runtime slice should use:
+
+```text
+ReplayExamineeAdapter
++
+StubEvaluatorAdapter
+```
+
+before adding a new live integration.
+
+Replay may exercise:
+
+- response normalisation
+- evidence preservation
+- assessment eligibility
+- rule selection
+- evaluator constraints
+- result rejection
+- reporting
+- regression behaviour
+
+## What replay does not prove
+
+Replay does not establish:
+
+- current live-model quality
+- current provider behaviour
+- non-deterministic stability
+- real latency or cost
+- browser or API integration reliability
+
+Those require separate controlled live experiments.
+
+## Manual capture
+
+Manual response capture is acceptable when it is the safest or most practical
+way to obtain a small controlled sample.
+
+Automation level is not itself validation quality.
+
+## CI consequence
+
+Default CI should remain deterministic and zero-cost.
+
+Live-model tests should be:
+
+- explicitly triggered
+- separately labelled
+- budget-aware
+- excluded from default pull-request validation
+- accompanied by preserved raw evidence
+
+## Claim boundary
+
+A green replay suite demonstrates internal framework consistency against the
+captured evidence.
+
+It does not demonstrate independent evaluator accuracy or broad model
+robustness.
 
 ---
 

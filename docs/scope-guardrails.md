@@ -695,6 +695,86 @@ unvalidated evaluator: confident outputs built on weak foundations.
 ---
 
 
+
+## SG-19 — Transport neutrality does not require adapter completeness
+
+### Inside the boundary
+
+The architecture may define stable contracts for:
+
+```text
+API
+callable
+CLI
+browser
+replay
+manual capture
+```
+
+### Outside the boundary
+
+The project does not need to implement every transport before the first
+assessment-grounded slice.
+
+### Rule
+
+Add an adapter only when a concrete validation target requires it.
+
+The first slice should prefer replay and stubs.
+
+---
+
+## SG-20 — Browser automation remains outside the evaluation core
+
+A browser-only examinee may be accessed through a Playwright adapter.
+
+The following remain adapter-specific:
+
+```text
+login
+selectors
+waiting
+conversation creation
+response extraction
+screenshots
+trace capture
+```
+
+They must not leak into:
+
+```text
+rule applicability
+assessment eligibility
+verdict semantics
+claim boundaries
+```
+
+### Why
+
+A brittle chat UI must not redefine the evaluation methodology.
+
+---
+
+## SG-21 — Live-model access is a validation resource, not a development dependency
+
+Default development and CI should not require paid or unstable live-model calls.
+
+Live integrations should be used for scoped experiments with:
+
+- explicit purpose
+- fixed budget
+- preserved raw evidence
+- known model/version where available
+- repeat count
+- documented limitations
+
+### Why
+
+The project should remain runnable and reviewable without external spending.
+
+---
+
+
 # 8. Scope classification model
 
 Every newly discovered idea should be classified before implementation.
@@ -708,6 +788,19 @@ Use when the capability:
 - has measurable acceptance criteria
 - can be tested with available evidence
 - does not depend on several unvalidated subsystems
+
+Current runtime-bridge examples:
+
+```text
+minimum CandidateResponse contract
+minimum ProposedEvaluatorResult contract
+separate ExamineePort and EvaluatorPort
+ReplayExamineeAdapter
+StubEvaluatorAdapter
+assessment eligibility
+result validation
+INS-MIXED-001 end-to-end replay
+```
 
 ## RECORD — represent conceptually or as metadata
 
@@ -739,6 +832,10 @@ Use when the idea:
 Examples:
 
 ```text
+broad API-provider catalogue
+Python-callable adapter
+CLI adapter
+generic browser-chat adapter
 automatic legal-source ingestion
 human-review dashboard
 multi-provider leaderboard

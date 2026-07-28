@@ -1480,4 +1480,255 @@ the project has encoded the insurance industry
 
 ---
 
+## Integration neutrality, replay-first validation, and the runtime roadmap
+
+A practical validation question surfaced:
+
+> **How will the framework be tested if no dedicated examinee chatbot has been
+> selected and generally available evaluator models are often paid?**
+
+The project does not yet have a complete answer for final live validation.
+
+That uncertainty should not force the architecture to assume one provider or one
+transport.
+
+### Architecture problem versus validation-access problem
+
+Two separate problems must remain separate:
+
+```text
+ARCHITECTURE PROBLEM
+How does the framework communicate with examinee and evaluator systems?
+
+VALIDATION-ACCESS PROBLEM
+Which real systems and models can be accessed legally, technically, and
+economically for controlled experiments?
+```
+
+The first problem can be designed now.
+
+The second can be solved gradually as suitable systems become available.
+
+### API is one transport option
+
+The framework should not assume:
+
+```text
+examinee = HTTP API
+evaluator = HTTP API
+```
+
+Possible access modes include:
+
+```text
+API / SDK
+Python callable
+CLI / subprocess
+browser / chat UI
+replay fixture
+manual capture
+```
+
+The core pipeline should depend on normalised response contracts rather than
+transport details.
+
+### Separate examinee and evaluator ports
+
+The two roles need different interfaces even when both are implemented by LLMs.
+
+```text
+ExamineePort
+→ receives a test stimulus
+→ returns CandidateResponse
+
+EvaluatorPort
+→ receives CandidateResponse + AssessmentContract
+→ returns ProposedEvaluatorResult
+```
+
+The examinee adapter may collect:
+
+- response text
+- structured output
+- citations
+- tool calls
+- attachments
+- screenshots
+- latency
+- conversation metadata
+- technical errors
+
+The evaluator adapter may collect:
+
+- proposed scoped findings
+- rule references
+- evidence references
+- rationale
+- not-assessed targets
+- raw output
+- technical errors
+
+### Browser access is an adapter concern
+
+A chatbot available only through a web interface may be tested through a
+Playwright-based adapter.
+
+That does not make Playwright part of the framework core.
+
+```text
+BrowserChatAdapter
+├── login
+├── start conversation
+├── submit stimulus
+├── wait for completion
+├── extract response
+├── collect visible evidence
+└── capture screenshot / trace
+```
+
+Selectors, login logic, waiting strategies, and UI-specific extraction belong to
+that adapter or its Page Objects.
+
+### Replay becomes a first-class mode
+
+The framework should be developable without paying for two live models on every
+test run.
+
+A captured candidate response can be evaluated repeatedly:
+
+```text
+record once
+        ↓
+store as controlled fixture
+        ↓
+exercise eligibility, rules, evaluator constraints,
+result validation, and reporting many times
+```
+
+Replay supports:
+
+- deterministic regression
+- zero-cost CI
+- reproducible failure analysis
+- malformed-output tests
+- evaluator-overreach tests
+- rule-version migration tests
+
+It does not validate live model quality.
+
+### Manual capture is acceptable
+
+A user may manually submit a stimulus to a model and copy the result into a
+controlled file.
+
+This is less automated but may be the correct method when:
+
+- no API exists
+- browser automation is unstable
+- terms of service restrict automation
+- authentication is complex
+- only a few controlled responses are needed
+
+The framework should value traceable evidence over automation theatre.
+
+### What can be tested without a live model
+
+Using fakes, stubs, and replay, the project can already validate:
+
+```text
+adapter contract conformance
+technical-status handling
+candidate-response normalisation
+evidence preservation
+assessment eligibility
+allowed and excluded targets
+missing-evidence handling
+result-schema validation
+rejection of evaluator overreach
+NOT_ASSESSED versus FAIL
+partial-scope claim boundaries
+```
+
+This is framework validation.
+
+It must not be described as evaluator-accuracy validation.
+
+### Roadmap correction
+
+The project now has:
+
+```text
+RUNNING TECHNICAL BASELINE
+→ current judge/score prototype
+
+DOCUMENTED CONCEPTUAL MODEL
+→ assessment-grounded target architecture
+```
+
+The next work is the bridge between them.
+
+The current milestone is:
+
+```text
+normalised contracts
+        ↓
+minimal examinee/evaluator ports
+        ↓
+replay and stub adapters
+        ↓
+deterministic AssessmentContract
+        ↓
+bounded evaluator result
+        ↓
+deterministic result validator
+        ↓
+INS-MIXED-001 scoped result
+```
+
+The first end-to-end slice should require no paid model call.
+
+### Adapter breadth guardrail
+
+Designing for several access modes does not mean implementing all of them now.
+
+The initial adapter set should be:
+
+```text
+ReplayExamineeAdapter
+StubEvaluatorAdapter
+```
+
+Then one live adapter should be added only when selected by a concrete validation
+experiment.
+
+Possible later adapters:
+
+```text
+API
+Python callable
+CLI
+browser
+manual capture
+```
+
+Architecture should remain open.
+
+Implementation should remain narrow.
+
+### Current roadmap principle
+
+> **Build the smallest transport-neutral slice that can be validated without
+> live-model access, then add only the integrations required by the next
+> evidence-gathering experiment.**
+
+This preserves both:
+
+> **Understand broadly. Implement narrowly.**
+
+and:
+
+> **Validation before expansion.**
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —

@@ -218,6 +218,8 @@ In other words:
 - [`LEARNINGS.md`](LEARNINGS.md) — chronological project reasoning and discoveries
 - [`docs/conceptual-model.md`](docs/conceptual-model.md) — current conceptual model and HLR draft
 - [`docs/rules-and-domain-packs.md`](docs/rules-and-domain-packs.md) — controlled rules layer, bounded evaluator protocol, and domain-pack model
+- [`docs/integration-architecture.md`](docs/integration-architecture.md) — transport-neutral examinee/evaluator ports, adapters, replay, and live-validation boundaries
+- [`docs/roadmap.md`](docs/roadmap.md) — current project position, next vertical slice, validation path, and v1.0 gates
 - [`docs/architecture-decisions.md`](docs/architecture-decisions.md) — current structural and scope decisions
 - [`docs/scope-guardrails.md`](docs/scope-guardrails.md) — boundaries that prevent conceptual growth from becoming uncontrolled implementation scope
 - [`docs/testing-strategy.md`](docs/testing-strategy.md) — validation levels and claim boundaries
@@ -422,6 +424,86 @@ or redirect, and which out-of-domain claims the evaluator is not authorised to
 judge substantively.
 
 See [`docs/rules-and-domain-packs.md`](docs/rules-and-domain-packs.md).
+
+---
+
+
+## Integration architecture — API is one transport, not the model
+
+The framework should not define an LLM integration as:
+
+```text
+HTTP endpoint
++ API key
+```
+
+The examinee and evaluator may be accessed through:
+
+```text
+API / SDK
+Python callable
+CLI / subprocess
+browser or chat UI
+replay file
+manual capture
+```
+
+The core pipeline should depend on normalised contracts:
+
+```text
+EXAMINEE ADAPTER
+        ↓
+CandidateResponse
+
+EVALUATOR ADAPTER
+        ↓
+ProposedEvaluatorResult
+```
+
+not on the transport used underneath them.
+
+The two ports remain separate even when both systems use similar model
+technology:
+
+```text
+ExamineePort
+→ submits the test stimulus and captures the candidate response
+
+EvaluatorPort
+→ receives the bounded assessment contract and proposes scoped findings
+```
+
+A browser integration may use Playwright, but Playwright belongs inside a
+system-specific adapter. UI selectors, login flows, waiting rules, and chat
+extraction must not leak into the evaluation core.
+
+### Replay is a first-class validation mode
+
+The project does not need two paid live LLMs for every development or CI run.
+
+Most framework behaviour can be developed and regression-tested with:
+
+```text
+captured CandidateResponse fixtures
++
+stub / replay evaluator outputs
++
+deterministic eligibility and result validation
+```
+
+Live models are reserved for controlled evidence-gathering sessions.
+
+This allows the project to distinguish:
+
+```text
+framework correctness
+from
+live evaluator effectiveness
+from
+live examinee behaviour
+```
+
+See [`docs/integration-architecture.md`](docs/integration-architecture.md).
 
 ---
 
@@ -721,104 +803,125 @@ Thresholds are set per test case based on risk:
 
 ---
 
-## Roadmap
 
-### Pre-v1.0 — Foundation implemented, validation pending
+## Where the project is now
 
-Implemented:
-
-- ✅ Hallucination detection (7 cases, 4 domains)
-- ✅ Prompt injection resistance (7 attack vectors)
-- ✅ Response quality scoring (6 cases)
-- ✅ Regression testing with baselines
-- ✅ Edge case robustness
-- ✅ Mock mode + CI/CD with Allure reporting
-
-Validation path:
+The project currently has two maturity levels:
 
 ```text
-working prototype
-        ↓
-validate evaluator behaviour
-        ↓
-validate evidence and test-basis assumptions
-        ↓
-understand gradability and judge-authority boundaries
-        ↓
-review thresholds and scoring decisions
-        ↓
-controlled live-model validation
-        ↓
-define evidence-backed v1.0 acceptance criteria
-        ↓
-v1.0
+RUNNING CODE
+→ judge-centric prototype with heuristics, scores, mocks, pytest, CI, and Allure
+
+DOCUMENTED TARGET MODEL
+→ Test Basis, eligibility, scoped gradability, controlled rules,
+  bounded evaluator, and traceable findings
 ```
 
-The purpose of the Pre-v1.0 phase is not to add more evaluation categories. It is
-to establish how much trust can reasonably be placed in the existing evaluation
-approach and what evidence is required to support its claims.
+The central gap is the runtime bridge between them.
 
-Current validation priorities:
+The next milestone is **not** another evaluator, another provider, or another
+domain.
 
-- ⏳ Validate evaluators against independently justified known-good, known-bad,
-  borderline, ambiguous, and insufficient-evidence cases
-- ⏳ Define the minimum evidence and test basis required for different verdicts
-- ⏳ Clarify gradability and the boundary of automated judge authority
-- ⏳ Define the first controlled, versioned rules subset for selected scenario classes
-- ⏳ Validate deterministic pre-evaluation constraints and post-evaluation result checks
-- ⏳ Exercise the model on one mixed-domain insurance scenario with partial gradability
-- ⏳ Review threshold and scoring assumptions against validation evidence
-- ⏳ Complete a small, controlled live-model validation experiment
-- ⏳ Refine high-level requirements into measurable v1.0 acceptance criteria
+It is the smallest end-to-end slice that proves:
+
+```text
+a response can be behaviourally assessed
+while an unsupported factual target is blocked
+and evaluator overreach is rejected
+```
+
+The first slice should run without paid model calls by using replay and stub
+adapters.
+
+See [`docs/roadmap.md`](docs/roadmap.md) for the complete staged roadmap.
+
+---
+
+## Roadmap
+
+### Current baseline — implemented
+
+- ✅ Runnable heuristic and LLM-assisted evaluation prototype
+- ✅ Mock mode, pytest, CI, regression baselines, and Allure reporting
+- ✅ Initial hallucination, prompt-injection, quality, regression, and edge cases
+- ✅ Conceptual model for Test Basis, gradability, scoped findings, and claim boundaries
+- ✅ Bounded-evaluator direction and controlled rules/domain-pack model
+- ✅ First mixed-domain insurance case as a design artefact
+
+### Current milestone — runtime bridge
+
+```text
+normalised integration contracts
+        ↓
+replay examinee + stub evaluator
+        ↓
+deterministic AssessmentContract
+        ↓
+bounded evaluator invocation
+        ↓
+deterministic result validation
+        ↓
+scoped findings
+```
+
+Current priorities:
+
+- ⏳ Define minimum `CandidateResponse` and evaluator-result envelopes
+- ⏳ Define separate examinee and evaluator ports
+- ⏳ Implement replay/stub adapters and adapter contract tests
+- ⏳ Implement deterministic assessment eligibility and scope selection
+- ⏳ Implement post-evaluator rejection of out-of-scope findings
+- ⏳ Execute `INS-MIXED-001` end to end without live paid models
+- ⏳ Prove that behaviour may be graded while unsupported factual outcomes remain `NOT_ASSESSED`
+
+### Next milestone — controlled live integration
+
+Only after the replay slice is stable:
+
+- ⬜ Adapt the existing API integration behind the evaluator port
+- ⬜ Add one examinee integration required by a concrete validation target
+- ⬜ Support non-API access where necessary through callable, CLI, browser, or manual-capture adapters
+- ⬜ Run a small controlled live experiment with repeated outputs
+- ⬜ Compare framework decisions with independently justified human expectations
+- ⬜ Record cost, latency, instability, and adapter-specific failure modes
+
+### Later Pre-v1.0 validation
+
+- ⬜ Validate the first controlled rule subset
+- ⬜ Review scoring and threshold assumptions
+- ⬜ Decide which legacy evaluators remain useful under scoped gradability
+- ⬜ Validate evaluator behaviour on known-good, known-bad, borderline, ambiguous, and insufficient-evidence cases
+- ⬜ Define measurable v1.0 claim and release boundaries
 
 ### v1.0 — Credible Evaluation Foundation
 
-`v1.0` is intended to represent a **minimum credible evidence level**, not a
-target number of features.
+`v1.0` remains an evidence threshold, not a feature count.
 
-The release should demonstrate a defined and evidence-backed core evaluation
-capability with:
+It should demonstrate:
 
-- scoped evaluator validation
-- explicit claim boundaries
-- documented evaluator failure modes and limitations
-- justified test-basis and evidence requirements
-- reviewed threshold and scoring assumptions
-- controlled live-model evidence
-- measurable acceptance criteria for the agreed v1.0 scope
+- a transport-neutral evaluation pipeline
+- bounded evaluator authority
+- deterministic eligibility and result validation
+- controlled and versioned rule use
+- explicit `FAIL` versus `NOT_ASSESSED` versus evaluation-process error
+- scoped live-model evidence
+- documented limitations and claim boundaries
+- reproducible replay-based regression tests
 
-The exact acceptance thresholds are intentionally not fixed yet. They should be
-derived from the validation design and evidence rather than invented in advance
-for the sake of versioning.
+Adapter breadth, domain breadth, and multi-judge experiments are not v1.0 goals
+unless validation evidence proves they are necessary.
 
-### Possible later directions
-
-Post-v1.0 development may explore:
-
-- multi-provider and multi-judge evaluation
-- toxicity and bias evaluation
-- PII leakage testing
-- RAG faithfulness
-- agent and tool-use evaluation
-- MCP testing patterns
-- broader labelled datasets
-- adversarial test generation
-
-These are exploration directions, **not committed release scope**.
-
-The next release direction should be chosen only after the Pre-v1.0 validation
-work shows which expansion is actually justified.
-
-See [`docs/future-ideas.md`](docs/future-ideas.md) for the broader research and
-design backlog.
+See [`docs/roadmap.md`](docs/roadmap.md) for stages, exit criteria, and deferred
+directions.
 
 ---
+
 
 ## Tech stack
 
 | Tool | Role |
 |---|---|
-| `anthropic` SDK | Current LLM provider integration |
+| `anthropic` SDK | Current legacy live-provider integration; future core will use transport-neutral evaluator adapters |
 | `pytest` | Test runner and fixture management |
 | `allure-pytest` | Rich HTML test reporting |
 | `pydantic` | Typed evaluator result models |

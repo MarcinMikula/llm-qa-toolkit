@@ -1117,6 +1117,117 @@ verdict.
 
 ---
 
+
+## 10.5 Integration boundary — roles and contracts, not transports
+
+The framework communicates with two external roles:
+
+```text
+system under evaluation
+external evaluator
+```
+
+Neither role is defined by an HTTP API.
+
+Possible access methods include:
+
+```text
+API / SDK
+Python callable
+CLI / subprocess
+browser / chat UI
+replay file
+manual capture
+```
+
+The conceptual core should depend on two separate ports.
+
+### Examinee port
+
+```text
+TEST STIMULUS
+        ↓
+EXAMINEE PORT / ADAPTER
+        ↓
+CANDIDATE RESPONSE ENVELOPE
+```
+
+The response envelope may preserve:
+
+- text or structured content
+- citations
+- tool calls
+- attachments
+- screenshots
+- conversation identifiers
+- timestamps and latency
+- technical status
+- raw response evidence
+
+### Evaluator port
+
+```text
+CANDIDATE RESPONSE
+        +
+ASSESSMENT CONTRACT
+        ↓
+EVALUATOR PORT / ADAPTER
+        ↓
+PROPOSED EVALUATOR RESULT
+```
+
+The proposed result may preserve:
+
+- proposed findings
+- not-assessed targets
+- rule references
+- evidence references
+- rationale
+- raw evaluator output
+- technical status
+
+The deterministic result validator remains downstream from the evaluator
+adapter.
+
+### Transport-specific logic remains outside core
+
+Examples:
+
+```text
+API authentication
+browser selectors
+chat login
+CLI process management
+SDK invocation
+file parsing
+```
+
+belong to adapters.
+
+They must not redefine assessment eligibility, rule authority, verdict meaning,
+or result validation.
+
+### Replay is part of the conceptual architecture
+
+Replay is not only a test convenience.
+
+It is a first-class input mode that supports reproducible validation of the
+framework independently from live-model access.
+
+```text
+captured external response
+        ↓
+normalised CandidateResponse
+        ↓
+same assessment pipeline
+```
+
+Replay evidence supports framework-behaviour claims.
+
+It does not independently support claims about current live-model behaviour.
+
+---
+
 ## 11. Current conceptual flow
 
 ```text
@@ -1130,6 +1241,8 @@ REGULATED-DOMAIN EVALUATION OBJECTIVE
                 ↓
       SYSTEM UNDER EVALUATION
             "examinee"
+                ↓
+        EXAMINEE ADAPTER
                 ↓
         CANDIDATE RESPONSE
                 ↓
@@ -1159,10 +1272,12 @@ REGULATED-DOMAIN EVALUATION OBJECTIVE
    │ Prohibited claims          │
    └────────────────────────────┘
                 ↓
+        EVALUATOR ADAPTER
+                ↓
     BOUNDED EXTERNAL EVALUATOR
   "semantic executor of the protocol"
                 ↓
-      PROPOSED SCOPED FINDINGS
+    PROPOSED EVALUATOR RESULT
                 ↓
  DETERMINISTIC RESULT VALIDATION
                 ↓
@@ -1569,6 +1684,52 @@ Model capability shall not be treated as operational authority.
 
 ---
 
+## HLR-25 — Integration shall be transport-neutral
+
+The evaluation core shall depend on normalised examinee and evaluator contracts,
+not on a specific API, SDK, browser, CLI, or provider.
+
+Transport-specific logic shall remain inside adapters.
+
+---
+
+## HLR-26 — Examinee and evaluator roles shall use separate ports
+
+The framework shall model separate integration responsibilities for:
+
+```text
+test stimulus → candidate response
+```
+
+and:
+
+```text
+candidate response + assessment contract → proposed evaluator result
+```
+
+The roles shall not be collapsed merely because both systems may use LLM
+technology.
+
+---
+
+## HLR-27 — Replay and controlled capture shall be supported as validation inputs
+
+The framework shall support controlled replay or manually captured external
+responses so that deterministic framework behaviour can be validated without
+repeated live-model calls.
+
+Replay evidence shall be clearly distinguished from current live-model evidence.
+
+---
+
+## HLR-28 — Technical integration status shall remain separate from substantive findings
+
+Adapter failures, timeouts, authentication errors, malformed responses, and
+browser-extraction failures shall not be represented as substantive failures of
+the system under evaluation.
+
+---
+
 
 ## 13. Scope discipline — broad understanding, narrow implementation
 
@@ -1657,21 +1818,27 @@ one mixed-domain insurance scenario
 +
 a small controlled rule subset
 +
+normalised replay input
++
 explicit available and missing evidence
 +
 behaviour gradable
 +
 factual outcome not gradable
++
+deterministic rejection of evaluator overreach
 ```
 
 Before coding the runtime slice:
 
 1. validate the mixed-domain case and expected strategy
 2. review the first shared and insurance-specific rules
-3. define the minimum conceptual assessment contract
-4. define deterministic rejection conditions for evaluator output
-5. derive measurable acceptance criteria
-6. only then commit runtime classes, enums, or YAML schemas
+3. define minimum candidate-response and evaluator-result envelopes
+4. define separate examinee and evaluator ports
+5. define the minimum conceptual assessment contract
+6. define deterministic rejection conditions for evaluator output
+7. derive measurable acceptance criteria
+8. only then commit runtime classes, enums, or YAML schemas
 
 The conceptual model is expected to evolve.
 

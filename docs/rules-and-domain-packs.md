@@ -629,6 +629,9 @@ safe missing-rule behaviour
 
 ## 14. Validation questions for the first slice
 
+The first rules experiment should run through normalised replay and evaluator
+contracts rather than depend on a specific live provider.
+
 The first rules experiment should answer:
 
 ```text
@@ -652,8 +655,10 @@ The slice does not need to prove complete domain correctness.
 - document the controlled rules model
 - validate one mixed-domain case
 - define a small rule subset
+- define minimum normalised integration envelopes
 - define assessment-contract requirements
 - define evaluator-result rejection conditions
+- run the first slice with replay examinee input and a stub evaluator
 
 ### RECORD
 
