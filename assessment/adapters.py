@@ -15,6 +15,7 @@ from assessment.models import (
     ProposedEvaluatorResult,
     ProposedFinding,
     ResponseProvenance,
+    RuleStatus,
     SourceType,
     TechnicalState,
     TechnicalStatus,
@@ -200,12 +201,23 @@ def load_assessment_request(fixture_path: str | Path) -> AssessmentRequest:
         for target, verdicts in raw_request["allowed_verdicts"].items()
     }
 
+    raw_rule_ids = raw_request.get(
+        "requested_rule_ids",
+        raw_request.get("applicable_rules"),
+    )
+    if not isinstance(raw_rule_ids, list):
+        raise TypeError(
+            "assessment_request.requested_rule_ids must be a JSON list."
+        )
+
     return AssessmentRequest(
         case_id=str(fixture["case_id"]),
         requested_targets=requested_targets,
         required_evidence=required_evidence,
-        applicable_rules=frozenset(
-            str(rule) for rule in raw_request["applicable_rules"]
+        requested_rule_ids=tuple(str(rule) for rule in raw_rule_ids),
+        allowed_rule_statuses=frozenset(
+            RuleStatus(status)
+            for status in raw_request.get("allowed_rule_statuses", ["DRAFT"])
         ),
         allowed_verdicts=allowed_verdicts,
         prohibited_claims=frozenset(

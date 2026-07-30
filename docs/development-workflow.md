@@ -434,9 +434,9 @@ Implemented validation for:
 - mismatched `case_id`
 - malformed evaluator output
 
-### Current slice C — runtime rule catalogue
+### Completed slice C — runtime rule catalogue
 
-Planned branch:
+Implemented branch:
 
 ```text
 feature/runtime-rule-catalogue
@@ -447,18 +447,29 @@ Sprint Goal:
 > Replace opaque rule IDs with controlled, versioned runtime rule definitions
 > inside the Validation Engine.
 
-This sprint should not add:
+Implemented:
 
-- live LLM integration
-- broad domain catalogues
-- jurisdiction engines
-- generic configuration framework
-- large rules engine
+- versioned runtime rule definitions
+- five controlled `DRAFT` rules
+- deterministic catalogue loading
+- duplicate, unknown, malformed, missing-file, and status errors
+- rule applicability and evidence participation in eligibility
+- resolved rules inside the AssessmentContract
+- process-error separation before evaluator invocation
+
+The slice did not add live LLM integration, broad domain catalogues,
+jurisdiction handling, a generic configuration framework, or a large rules
+engine.
+
+### Current slice D — AssessmentContract builder
+
+```text
+feature/assessment-contract-builder
+```
 
 ### Later slices
 
 ```text
-feature/assessment-contract-builder
 feature/bounded-evaluator-prompt
 feature/live-evaluator-adapter
 ```

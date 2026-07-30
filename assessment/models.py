@@ -1,7 +1,8 @@
-"""Typed contracts for the first assessment-grounded vertical slice.
+"""Typed contracts for the assessment-grounded runtime.
 
-The models are intentionally small. They represent only the information needed
-by INS-MIXED-001 and avoid committing the project to a complete future schema.
+The models remain intentionally small. They cover the controlled rule-catalogue
+slice and the INS-MIXED-001 scenario without pretending to be a complete future
+schema for every domain or evaluator.
 """
 
 from __future__ import annotations
@@ -55,6 +56,15 @@ class AssessmentTarget(StrEnum):
     NUTRITIONAL_OR_MEDICAL_CORRECTNESS = "nutritional_or_medical_correctness"
 
 
+class RuleStatus(StrEnum):
+    """Controlled lifecycle or authority status of a rule definition."""
+
+    DRAFT = "DRAFT"
+    REVIEWED = "REVIEWED"
+    VALIDATED = "VALIDATED"
+    DEPRECATED = "DEPRECATED"
+
+
 class ExclusionReason(StrEnum):
     """Why a requested target was excluded from substantive assessment."""
 
@@ -67,10 +77,19 @@ class RejectionReason(StrEnum):
     TARGET_NOT_ALLOWED = "TARGET_NOT_ALLOWED"
     VERDICT_NOT_ALLOWED = "VERDICT_NOT_ALLOWED"
     UNKNOWN_RULE = "UNKNOWN_RULE"
+    RULE_NOT_APPLICABLE_TO_TARGET = "RULE_NOT_APPLICABLE_TO_TARGET"
     EVIDENCE_NOT_AVAILABLE = "EVIDENCE_NOT_AVAILABLE"
     PROHIBITED_CLAIM = "PROHIBITED_CLAIM"
     OVERALL_SCORE_NOT_ALLOWED = "OVERALL_SCORE_NOT_ALLOWED"
     CASE_ID_MISMATCH = "CASE_ID_MISMATCH"
+
+
+class AssessmentDefinitionError(ValueError):
+    """Invalid assessment configuration or Test Basis, not examinee failure."""
+
+    def __init__(self, error_type: str, message: str) -> None:
+        super().__init__(message)
+        self.error_type = error_type
 
 
 @dataclass(frozen=True)
@@ -105,6 +124,47 @@ class ResponseProvenance:
 
 
 @dataclass(frozen=True)
+class RuleSource:
+    """Declared authority source for a controlled rule definition."""
+
+    source_type: str
+    reference: str
+
+
+@dataclass(frozen=True)
+class RuleDefinition:
+    """Versioned rule content supplied to assessment-contract construction."""
+
+    rule_id: str
+    version: str
+    status: RuleStatus
+    title: str
+    evaluator_instruction: str
+    applies_to_targets: frozenset[AssessmentTarget]
+    required_evidence: frozenset[str]
+    source: RuleSource
+    forbidden_behaviours: tuple[str, ...] = ()
+    permitted_conclusions: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        text_fields = {
+            "rule_id": self.rule_id,
+            "version": self.version,
+            "title": self.title,
+            "evaluator_instruction": self.evaluator_instruction,
+            "source.source_type": self.source.source_type,
+            "source.reference": self.source.reference,
+        }
+        empty_fields = [name for name, value in text_fields.items() if not value.strip()]
+        if empty_fields:
+            joined = ", ".join(empty_fields)
+            raise ValueError(f"Rule definition contains empty fields: {joined}")
+
+        if not self.applies_to_targets:
+            raise ValueError("Rule definition must apply to at least one target.")
+
+
+@dataclass(frozen=True)
 class ExamineeRequest:
     """Input sent through an examinee port."""
 
@@ -132,7 +192,8 @@ class AssessmentRequest:
     case_id: str
     requested_targets: tuple[AssessmentTarget, ...]
     required_evidence: Mapping[AssessmentTarget, frozenset[str]]
-    applicable_rules: frozenset[str]
+    requested_rule_ids: tuple[str, ...]
+    allowed_rule_statuses: frozenset[RuleStatus]
     allowed_verdicts: Mapping[AssessmentTarget, frozenset[Verdict]]
     prohibited_claims: frozenset[str]
 
@@ -148,6 +209,15 @@ class AssessmentRequest:
         if missing_verdicts:
             targets = ", ".join(sorted(target.value for target in missing_verdicts))
             raise ValueError(f"Missing allowed verdicts for targets: {targets}")
+
+        if len(self.requested_rule_ids) != len(set(self.requested_rule_ids)):
+            raise ValueError("Assessment request contains duplicate rule IDs.")
+
+        if self.requested_rule_ids and not self.allowed_rule_statuses:
+            raise ValueError(
+                "Assessment request must allow at least one rule status when rules "
+                "are requested."
+            )
 
 
 @dataclass(frozen=True)
@@ -167,14 +237,34 @@ class AssessmentContract:
     candidate_response_id: str
     allowed_targets: frozenset[AssessmentTarget]
     excluded_targets: Mapping[AssessmentTarget, ExcludedTarget]
-    applicable_rules: frozenset[str]
+    applicable_rules: tuple[RuleDefinition, ...]
     available_evidence: frozenset[str]
+    effective_required_evidence: Mapping[AssessmentTarget, frozenset[str]]
     allowed_verdicts: Mapping[AssessmentTarget, frozenset[Verdict]]
     prohibited_claims: frozenset[str]
+
+    def __post_init__(self) -> None:
+        rule_ids = [rule.rule_id for rule in self.applicable_rules]
+        if len(rule_ids) != len(set(rule_ids)):
+            raise ValueError("Assessment contract contains duplicate rule IDs.")
 
     @property
     def is_partial(self) -> bool:
         return bool(self.excluded_targets)
+
+    @property
+    def rule_ids(self) -> frozenset[str]:
+        """IDs available to the evaluator-result validator."""
+
+        return frozenset(rule.rule_id for rule in self.applicable_rules)
+
+    def rule_by_id(self, rule_id: str) -> RuleDefinition | None:
+        """Return a resolved rule definition from this exact contract."""
+
+        return next(
+            (rule for rule in self.applicable_rules if rule.rule_id == rule_id),
+            None,
+        )
 
 
 @dataclass(frozen=True)

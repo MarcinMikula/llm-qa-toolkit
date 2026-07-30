@@ -1993,4 +1993,139 @@ Its goal is:
 
 ---
 
+## Runtime rules must affect eligibility, not only evaluator wording
+
+Sprint 2C replaced opaque rule IDs with controlled runtime definitions.
+
+The implemented path is:
+
+```text
+requested rule IDs
+→ RuleCatalog
+→ validated RuleDefinition objects
+→ effective evidence requirements
+→ allowed and excluded targets
+→ AssessmentContract
+```
+
+A runtime rule now carries:
+
+```text
+id
+version
+status
+title
+evaluator instruction
+applicable targets
+required evidence
+source
+forbidden behaviours
+permitted conclusions
+```
+
+The first five rules are deliberately marked:
+
+```text
+DRAFT
+```
+
+This is an authority statement, not a cosmetic label.
+
+It means the rules are controlled design hypotheses used by the framework, but
+not independently validated universal domain standards.
+
+### A rule is not useful if it only decorates a prompt
+
+The most important implementation decision was to make rule requirements affect
+assessment eligibility.
+
+```text
+scenario-required evidence
++
+rule-required evidence
+=
+effective required evidence
+```
+
+When rule evidence is missing:
+
+```text
+target excluded
+rule not exposed for that excluded target
+NOT_ASSESSED boundary preserved
+```
+
+not:
+
+```text
+evaluator guesses
+or
+examinee FAIL
+```
+
+### Catalogue failures are process failures
+
+The pipeline now stops before evaluator invocation for:
+
+```text
+duplicate rule ID
+unknown requested rule
+malformed rule
+missing catalogue file
+disallowed rule status
+```
+
+These outcomes produce a technical assessment error.
+
+They do not become substantive findings about the system under evaluation.
+
+### Full rule definitions enable a stronger post-check
+
+With rule definitions inside the AssessmentContract, the validator can now
+check both:
+
+```text
+Does this rule ID exist in the contract?
+```
+
+and:
+
+```text
+Does this resolved rule apply to the finding target?
+```
+
+This closes a boundary that plain rule-ID membership could not express.
+
+### Public construction paths reduce test fragility
+
+The evaluator-verdict boundary test no longer modifies a completed contract with
+`dataclasses.replace()`.
+
+It now prepares the restriction through:
+
+```text
+controlled fixture
+→ AssessmentRequest
+→ AssessmentEligibilityChecker
+→ AssessmentContract
+```
+
+This tests runtime behaviour rather than relying on dataclass reconstruction
+mechanics.
+
+### Claim boundary
+
+The sprint demonstrates deterministic rule loading, resolution, applicability,
+evidence participation, and failure classification.
+
+It does not demonstrate:
+
+- independent correctness of insurance or shared rules
+- evaluator accuracy
+- live-model compliance
+- complete rule coverage
+- production readiness of the Validation Engine
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —

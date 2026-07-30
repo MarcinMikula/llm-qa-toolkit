@@ -101,7 +101,7 @@ class EvaluationResultValidator:
         case_id: str,
         technical_status: TechnicalStatus,
     ) -> ScopedEvaluationResult:
-        """Create a result for an upstream adapter error without a verdict."""
+        """Create a result for an upstream process error without a verdict."""
 
         return ScopedEvaluationResult(
             case_id=case_id,
@@ -135,11 +135,22 @@ class EvaluationResultValidator:
                 ),
             )
 
-        if finding.rule_id not in contract.applicable_rules:
+        rule = contract.rule_by_id(finding.rule_id)
+        if rule is None:
             return RejectedFinding(
                 finding=finding,
                 reason=RejectionReason.UNKNOWN_RULE,
                 details=f"Rule {finding.rule_id!r} is not applicable to this contract.",
+            )
+
+        if finding.target not in rule.applies_to_targets:
+            return RejectedFinding(
+                finding=finding,
+                reason=RejectionReason.RULE_NOT_APPLICABLE_TO_TARGET,
+                details=(
+                    f"Rule {finding.rule_id!r} does not apply to target "
+                    f"{finding.target.value!r}."
+                ),
             )
 
         unavailable = finding.evidence_used - contract.available_evidence
