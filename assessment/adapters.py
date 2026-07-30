@@ -91,41 +91,85 @@ class StubEvaluatorAdapter:
         return self._result
 
     @classmethod
-    def from_fixture(cls, fixture_path: str | Path) -> StubEvaluatorAdapter:
-        fixture = _load_json(Path(fixture_path))
-        raw_result = fixture["stub_evaluator_result"]
-        status = raw_result.get("technical_status", {"state": "COMPLETED"})
+    def from_fixture(
+        cls,
+        fixture_path: str | Path,
+        *,
+        expected_case_id: str | None = None,
+    ) -> StubEvaluatorAdapter:
+        path = Path(fixture_path)
+        fixture: Mapping[str, Any] | None = None
 
-        findings = tuple(
-            ProposedFinding(
-                finding_id=str(item["finding_id"]),
-                target=AssessmentTarget(item["target"]),
-                verdict=Verdict(item["verdict"]),
-                rule_id=str(item["rule_id"]),
-                evidence_used=frozenset(
-                    str(evidence) for evidence in item.get("evidence_used", [])
-                ),
-                rationale=str(item["rationale"]),
-                claims=frozenset(str(claim) for claim in item.get("claims", [])),
+        try:
+            fixture = _load_json(path)
+            raw_result = fixture["stub_evaluator_result"]
+            if not isinstance(raw_result, dict):
+                raise TypeError("stub_evaluator_result must be a JSON object.")
+
+            status = raw_result.get("technical_status", {"state": "COMPLETED"})
+            if not isinstance(status, dict):
+                raise TypeError("technical_status must be a JSON object.")
+
+            findings = tuple(
+                ProposedFinding(
+                    finding_id=str(item["finding_id"]),
+                    target=AssessmentTarget(item["target"]),
+                    verdict=Verdict(item["verdict"]),
+                    rule_id=str(item["rule_id"]),
+                    evidence_used=frozenset(
+                        str(evidence) for evidence in item.get("evidence_used", [])
+                    ),
+                    rationale=str(item["rationale"]),
+                    claims=frozenset(
+                        str(claim) for claim in item.get("claims", [])
+                    ),
+                )
+                for item in raw_result.get("findings", [])
             )
-            for item in raw_result.get("findings", [])
-        )
 
-        technical_status = TechnicalStatus(
-            state=TechnicalState(status["state"]),
-            error_type=status.get("error_type"),
-            message=status.get("message"),
-        )
-
-        return cls(
-            ProposedEvaluatorResult(
-                case_id=str(fixture["case_id"]),
-                technical_status=technical_status,
-                findings=findings,
-                overall_score=raw_result.get("overall_score"),
-                raw_output=json.dumps(raw_result, ensure_ascii=False),
+            technical_status = TechnicalStatus(
+                state=TechnicalState(status["state"]),
+                error_type=status.get("error_type"),
+                message=status.get("message"),
             )
-        )
+
+            return cls(
+                ProposedEvaluatorResult(
+                    case_id=str(fixture["case_id"]),
+                    technical_status=technical_status,
+                    findings=findings,
+                    overall_score=raw_result.get("overall_score"),
+                    raw_output=json.dumps(raw_result, ensure_ascii=False),
+                )
+            )
+        except FileNotFoundError as exc:
+            return cls(
+                _evaluator_parse_error_result(
+                    case_id=expected_case_id or "UNKNOWN",
+                    error_type="EVALUATOR_FIXTURE_NOT_FOUND",
+                    message=str(exc),
+                    raw_output=None,
+                )
+            )
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            case_id = expected_case_id or (
+                str(fixture.get("case_id", "UNKNOWN"))
+                if isinstance(fixture, Mapping)
+                else "UNKNOWN"
+            )
+            raw_output = (
+                json.dumps(fixture, ensure_ascii=False)
+                if isinstance(fixture, Mapping)
+                else None
+            )
+            return cls(
+                _evaluator_parse_error_result(
+                    case_id=case_id,
+                    error_type="EVALUATOR_RESULT_PARSE_ERROR",
+                    message=str(exc),
+                    raw_output=raw_output,
+                )
+            )
 
 
 def load_examinee_request(fixture_path: str | Path) -> ExamineeRequest:
@@ -200,4 +244,20 @@ def _technical_error_response(
             validation_purpose="framework_pipeline",
         ),
         technical_status=TechnicalStatus.error(error_type, message),
+    )
+
+
+def _evaluator_parse_error_result(
+    *,
+    case_id: str,
+    error_type: str,
+    message: str,
+    raw_output: str | None,
+) -> ProposedEvaluatorResult:
+    return ProposedEvaluatorResult(
+        case_id=case_id,
+        technical_status=TechnicalStatus.error(error_type, message),
+        findings=(),
+        overall_score=None,
+        raw_output=raw_output,
     )

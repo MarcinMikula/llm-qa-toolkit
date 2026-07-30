@@ -35,28 +35,37 @@ class EvaluationResultValidator:
                 not_assessed=tuple(contract.excluded_targets.values()),
             )
 
-        accepted = []
-        rejected = []
-        artifacts = []
+        accepted: list[ProposedFinding] = []
+        rejected: list[RejectedFinding] = []
+        artifacts: list[RejectedArtifact] = []
 
         if proposed_result.case_id != contract.case_id:
+            mismatch_details = (
+                f"Evaluator result case_id {proposed_result.case_id!r} does "
+                f"not match contract case_id {contract.case_id!r}."
+            )
             artifacts.append(
                 RejectedArtifact(
                     artifact_type="evaluator_result",
                     reason=RejectionReason.CASE_ID_MISMATCH,
-                    details=(
-                        f"Evaluator result case_id {proposed_result.case_id!r} does "
-                        f"not match contract case_id {contract.case_id!r}."
-                    ),
+                    details=mismatch_details,
                 )
             )
-
-        for finding in proposed_result.findings:
-            rejection = self._validate_finding(contract, finding)
-            if rejection is None:
-                accepted.append(finding)
-            else:
-                rejected.append(rejection)
+            rejected.extend(
+                RejectedFinding(
+                    finding=finding,
+                    reason=RejectionReason.CASE_ID_MISMATCH,
+                    details=mismatch_details,
+                )
+                for finding in proposed_result.findings
+            )
+        else:
+            for finding in proposed_result.findings:
+                rejection = self._validate_finding(contract, finding)
+                if rejection is None:
+                    accepted.append(finding)
+                else:
+                    rejected.append(rejection)
 
         if proposed_result.overall_score is not None and contract.is_partial:
             artifacts.append(
