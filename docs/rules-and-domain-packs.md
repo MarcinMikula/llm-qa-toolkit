@@ -654,27 +654,35 @@ The slice does not need to prove complete domain correctness.
 
 ## 14.5 Current runtime status
 
-The first assessment slices currently use rule identifiers inside the
-AssessmentContract.
+The minimum controlled runtime catalogue is now implemented.
 
-Implemented validation can reject:
-
-- unknown rule references returned by the evaluator
-- other target, evidence, verdict, claim, and case boundary violations
-
-Not yet implemented:
+The assessment path now uses:
 
 ```text
-runtime RuleDefinition objects
-rule version and status enforcement
-duplicate-rule detection
-rule-source preservation in the contract
-rule applicability resolution from a catalogue
+requested rule IDs
+→ RuleCatalog
+→ validated RuleDefinition objects
+→ eligibility and applicability checks
+→ resolved rules inside AssessmentContract
 ```
 
-The next sprint should implement the minimum controlled runtime catalogue.
+Implemented controls include:
 
-It should not create a large generic rules engine.
+- five versioned `DRAFT` rules for `INS-MIXED-001`
+- source and evaluator-instruction preservation
+- target applicability
+- rule-derived evidence requirements
+- duplicate-rule detection
+- unknown-rule rejection
+- malformed and missing-file errors
+- disallowed-status rejection, including `DEPRECATED` under the current request
+- rejection when an evaluator cites a resolved rule for the wrong target
+
+Catalogue and rule-definition failures stop the assessment before evaluator
+invocation and remain process errors rather than examinee failures.
+
+This does not validate the domain correctness of the rules and does not create a
+large generic rules engine.
 
 ---
 
@@ -682,13 +690,12 @@ It should not create a large generic rules engine.
 
 ### NOW
 
-- preserve the controlled rules model
-- define the minimum runtime `RuleDefinition`
-- load the first small rule subset
-- validate duplicate, unknown, malformed, and deprecated rules
-- preserve version, status, source, targets, and evidence requirements
-- resolve rule definitions into the AssessmentContract
-- keep `INS-MIXED-001` green end to end
+- preserve the implemented controlled runtime catalogue
+- keep the first five rules explicitly `DRAFT`
+- develop the public AssessmentContract builder
+- retain rule and evidence decisions for traceability
+- prepare resolved rules for bounded evaluator prompt serialisation
+- keep `INS-MIXED-001` and all boundary cases green end to end
 
 ### RECORD
 

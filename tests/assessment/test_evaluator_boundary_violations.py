@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
 import json
 from pathlib import Path
 
@@ -28,22 +27,23 @@ from assessment.pipeline import AssessmentPipeline
 from assessment.validator import EvaluationResultValidator
 
 
-FIXTURE_PATH = (
-    Path(__file__).resolve().parents[2]
-    / "testdata"
-    / "assessment"
-    / "ins_mixed_001.json"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+FIXTURE_PATH = PROJECT_ROOT / "testdata" / "assessment" / "ins_mixed_001.json"
+RULE_FILES = (
+    PROJECT_ROOT / "testdata" / "assessment" / "rules" / "global_rules.json",
+    PROJECT_ROOT / "testdata" / "assessment" / "rules" / "insurance_rules.json",
 )
 
 
-def _build_contract() -> AssessmentContract:
+def _checker() -> AssessmentEligibilityChecker:
+    return AssessmentEligibilityChecker.from_rule_files(*RULE_FILES)
+
+
+def _build_contract(fixture_path: Path = FIXTURE_PATH) -> AssessmentContract:
     examinee_request = load_examinee_request(FIXTURE_PATH)
-    assessment_request = load_assessment_request(FIXTURE_PATH)
+    assessment_request = load_assessment_request(fixture_path)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
-    return AssessmentEligibilityChecker().build_contract(
-        candidate,
-        assessment_request,
-    )
+    return _checker().build_contract(candidate, assessment_request)
 
 
 def _finding(
@@ -98,6 +98,22 @@ def test_unknown_rule_reference_is_rejected() -> None:
     assert scoped.has_substantive_failure is False
 
 
+def test_rule_not_applicable_to_finding_target_is_rejected() -> None:
+    _, scoped = _validate(
+        _finding(
+            finding_id="F-WRONG-RULE-TARGET",
+            rule_id="GLOBAL-LIVE-DATA-01",
+        )
+    )
+
+    assert scoped.accepted_findings == ()
+    assert (
+        scoped.rejected_findings[0].reason
+        is RejectionReason.RULE_NOT_APPLICABLE_TO_TARGET
+    )
+    assert scoped.has_substantive_failure is False
+
+
 def test_unavailable_evidence_reference_is_rejected() -> None:
     _, scoped = _validate(
         _finding(
@@ -135,23 +151,24 @@ def test_prohibited_claim_is_rejected() -> None:
     assert "actual_weather_is_known" in scoped.rejected_findings[0].details
 
 
-def test_verdict_outside_target_contract_is_rejected() -> None:
-    contract = _build_contract()
-    restricted_verdicts = dict(contract.allowed_verdicts)
-    restricted_verdicts[AssessmentTarget.INTENT_SEPARATION] = frozenset(
-        {Verdict.PASS}
+def test_verdict_outside_target_contract_is_rejected(tmp_path: Path) -> None:
+    raw_fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    raw_fixture["assessment_request"]["allowed_verdicts"][
+        "intent_separation"
+    ] = ["PASS"]
+    restricted_fixture = tmp_path / "restricted_verdicts.json"
+    restricted_fixture.write_text(
+        json.dumps(raw_fixture, ensure_ascii=False, indent=2),
+        encoding="utf-8",
     )
-    restricted_contract = replace(
-        contract,
-        allowed_verdicts=restricted_verdicts,
-    )
+    contract = _build_contract(restricted_fixture)
 
     _, scoped = _validate(
         _finding(
             finding_id="F-FORBIDDEN-VERDICT",
             verdict=Verdict.FAIL,
         ),
-        contract=restricted_contract,
+        contract=contract,
     )
 
     assert scoped.accepted_findings == ()
@@ -217,6 +234,7 @@ def test_malformed_stub_result_becomes_technical_error(tmp_path: Path) -> None:
     pipeline = AssessmentPipeline(
         examinee=ReplayExamineeAdapter(FIXTURE_PATH),
         evaluator=evaluator,
+        eligibility_checker=_checker(),
     )
 
     run = pipeline.run(

@@ -858,8 +858,10 @@ NEW ASSESSMENT RUNTIME
 → CandidateResponse
 → separate examinee/evaluator ports
 → replay examinee and stub evaluator
-→ assessment eligibility
-→ AssessmentContract
+→ controlled runtime RuleCatalog
+→ versioned RuleDefinition objects
+→ assessment eligibility with rule evidence requirements
+→ AssessmentContract with resolved rules
 → deterministic result validation
 → ScopedEvaluationResult
 ```
@@ -876,14 +878,14 @@ The first runtime slice for `INS-MIXED-001` now proves that the framework can:
 
 The gap is not closed.
 
-The Validation Engine still needs executable rule definitions, test-definition
-validation, a formal contract builder, and a bounded live-evaluator request and
-result path.
+The runtime rule catalogue now exists, but the Validation Engine still needs
+broader test-definition validation, a dedicated public contract builder, and a
+bounded evaluator request and result path.
 
-The next sprint is therefore:
+The next Phase 2 slice is therefore:
 
 ```text
-feature/runtime-rule-catalogue
+feature/assessment-contract-builder
 ```
 
 See [`docs/roadmap.md`](docs/roadmap.md) and
@@ -904,32 +906,34 @@ See [`docs/roadmap.md`](docs/roadmap.md) and
 - ✅ Executable `INS-MIXED-001` assessment slice
 - ✅ Deterministic eligibility and result validation
 - ✅ Evaluator boundary-violation tests
+- ✅ Controlled runtime rule catalogue
+- ✅ Five versioned `DRAFT` rules for `INS-MIXED-001`
+- ✅ Rule status, source, applicability, and evidence validation
+- ✅ Rule-definition and catalogue errors separated from examinee failure
 
 ### Current Phase 2 sprint
 
 ```text
-feature/runtime-rule-catalogue
+feature/assessment-contract-builder
 ```
 
 Goal:
 
-> Replace opaque rule IDs with controlled, versioned runtime definitions inside
-> the Validation Engine.
+> Move remaining test-definition and contract-construction invariants behind one
+> explicit public builder path.
 
 Current priorities:
 
-- ⏳ Define the minimum runtime `RuleDefinition`
-- ⏳ Load and validate the first five controlled rules
-- ⏳ Reject duplicate, unknown, malformed, or deprecated rules
-- ⏳ Preserve version, status, source, applicability, targets, and evidence requirements
-- ⏳ Build `AssessmentContract` from resolved rule definitions
-- ⏳ Keep `INS-MIXED-001` green end to end
-- ⏳ Remove the brittle test-only contract mutation when the public builder path exists
+- ⏳ Validate the complete assessment definition before evaluator invocation
+- ⏳ Make contract construction the single supported runtime path
+- ⏳ Separate scenario requirements from catalogue-derived requirements clearly
+- ⏳ Preserve all missing-evidence and rule-resolution decisions for traceability
+- ⏳ Keep rule-catalogue failures as process errors
+- ⏳ Prepare the contract for bounded prompt serialisation
 
-### Later Phase 2 slices
+### Later Phase 2 slice
 
 ```text
-feature/assessment-contract-builder
 feature/bounded-evaluator-prompt
 ```
 

@@ -154,7 +154,7 @@ It remains open to revision as implementation exposes contradictions.
 
 ## Status
 
-🔶 **Current phase — first two implementation slices complete**
+🔶 **Current phase — first three implementation slices complete**
 
 ## Objective
 
@@ -224,9 +224,9 @@ Implemented deterministic rejection for:
 
 Rejected findings remain traceable and do not automatically fail the examinee.
 
-## Current Sprint 2C — runtime rule catalogue
+## Completed Sprint 2C — runtime rule catalogue
 
-Recommended branch:
+Implemented branch:
 
 ```text
 feature/runtime-rule-catalogue
@@ -237,32 +237,28 @@ Sprint Goal:
 > Replace opaque rule IDs with controlled, versioned runtime rule definitions
 > inside the Validation Engine.
 
-Minimum scope:
+Implemented:
 
-- `RuleDefinition`
-- version
-- status
-- source
-- evaluator instruction
-- applicable targets
-- required evidence
-- permitted conclusions or constraints
-- catalogue loading
-- duplicate detection
-- unknown-rule failure
-- malformed-rule failure
-- deprecated-rule exclusion
-- resolved rules in `AssessmentContract`
+- `RuleDefinition`, `RuleSource`, and `RuleStatus`
+- five controlled versioned `DRAFT` rules
+- deterministic JSON catalogue loading
+- duplicate, unknown, malformed, missing-file, and disallowed-status handling
+- rule applicability and evidence requirements
+- resolved rule definitions in `AssessmentContract`
+- validator checks against the exact resolved rule and target relationship
+- process-error handling before evaluator invocation
+- public-path test construction without `dataclasses.replace()` on contracts
 
-Out of scope:
+Still out of scope:
 
 - broad rules engine
 - hundreds of domain rules
 - jurisdiction engine
 - live evaluator
 - generic configuration framework
+- independent domain validation of the initial rules
 
-## Planned Sprint 2D — AssessmentContract builder
+## Current Sprint 2D — AssessmentContract builder
 
 Recommended branch:
 
@@ -305,11 +301,11 @@ No live provider is required for Phase 2E.
 - [x] Evaluator overreach is preserved and rejected
 - [x] Technical adapter failure remains distinct from substantive result
 - [x] No live API or paid model is required
-- [ ] Rule IDs are resolved to controlled runtime definitions
-- [ ] Rule version, status, source, applicability, and evidence requirements are enforced
+- [x] Rule IDs are resolved to controlled runtime definitions
+- [x] Rule version, status, source, applicability, and evidence requirements are enforced
 - [ ] Public AssessmentContract construction validates configuration invariants
 - [ ] Bounded evaluator request and structured result parser exist
-- [ ] Documentation and examples use the public construction path
+- [x] Current rule-catalogue and boundary tests use the public construction path
 - [ ] Full default mock suite remains green
 
 ## Phase 2 milestone tag
@@ -589,24 +585,23 @@ The current roadmap does not include:
 Begin:
 
 ```text
-feature/runtime-rule-catalogue
+feature/assessment-contract-builder
 ```
 
 with the Sprint Goal:
 
-> **Replace opaque rule IDs with the smallest controlled, versioned runtime
-> `RuleDefinition` model that can be resolved into the AssessmentContract for
-> `INS-MIXED-001`.**
+> **Move the remaining assessment-definition, evidence, and contract invariants
+> behind one explicit public construction path before serialising the contract
+> for an external evaluator.**
 
 Before coding, define:
 
-- required rule fields
-- allowed statuses
-- duplicate handling
-- unknown-rule handling
-- deprecated-rule handling
-- source and version preservation
-- applicability semantics
+- which validations belong to request loading versus contract construction
+- how scenario and rule evidence requirements are represented
+- how no-applicable-rule cases limit assessment
+- how configuration errors are preserved for traceability
+- whether all allowed targets require at least one resolved rule
+- the stable contract shape needed by the bounded evaluator prompt
 - positive and negative controlled cases
 - claim boundary for the sprint
 

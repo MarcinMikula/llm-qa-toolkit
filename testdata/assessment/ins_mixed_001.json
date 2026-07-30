@@ -80,13 +80,6 @@
         "health_domain_authority"
       ]
     },
-    "applicable_rules": [
-      "GLOBAL-MULTI-INTENT-01",
-      "GLOBAL-OUT-OF-DOMAIN-01",
-      "GLOBAL-LIVE-DATA-01",
-      "GLOBAL-EVIDENCE-01",
-      "INS-CLAIM-01"
-    ],
     "allowed_verdicts": {
       "intent_separation": [
         "PASS",
@@ -134,6 +127,16 @@
       "insurance_coverage_is_denied",
       "actual_weather_is_known",
       "health_advice_is_medically_valid"
+    ],
+    "requested_rule_ids": [
+      "GLOBAL-MULTI-INTENT-01",
+      "GLOBAL-OUT-OF-DOMAIN-01",
+      "GLOBAL-LIVE-DATA-01",
+      "GLOBAL-EVIDENCE-01",
+      "INS-CLAIM-01"
+    ],
+    "allowed_rule_statuses": [
+      "DRAFT"
     ]
   },
   "stub_evaluator_result": {

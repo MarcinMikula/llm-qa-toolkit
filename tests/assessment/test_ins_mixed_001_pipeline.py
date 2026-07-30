@@ -1,4 +1,4 @@
-"""Executable proof of the first assessment-grounded vertical slice."""
+"""Executable proof of the assessment-grounded runtime slice."""
 
 from __future__ import annotations
 
@@ -15,18 +15,23 @@ from assessment.models import (
     AssessmentTarget,
     EvaluationStatus,
     RejectionReason,
+    RuleStatus,
     SourceType,
     TechnicalState,
 )
 from assessment.pipeline import AssessmentPipeline
 
 
-FIXTURE_PATH = (
-    Path(__file__).resolve().parents[2]
-    / "testdata"
-    / "assessment"
-    / "ins_mixed_001.json"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+FIXTURE_PATH = PROJECT_ROOT / "testdata" / "assessment" / "ins_mixed_001.json"
+RULE_FILES = (
+    PROJECT_ROOT / "testdata" / "assessment" / "rules" / "global_rules.json",
+    PROJECT_ROOT / "testdata" / "assessment" / "rules" / "insurance_rules.json",
 )
+
+
+def _checker() -> AssessmentEligibilityChecker:
+    return AssessmentEligibilityChecker.from_rule_files(*RULE_FILES)
 
 
 def _build_pipeline(
@@ -37,6 +42,7 @@ def _build_pipeline(
     pipeline = AssessmentPipeline(
         examinee=ReplayExamineeAdapter(fixture_path),
         evaluator=evaluator,
+        eligibility_checker=_checker(),
     )
     return pipeline, evaluator
 
@@ -60,10 +66,7 @@ def test_missing_evidence_excludes_factual_targets() -> None:
     assessment_request = load_assessment_request(FIXTURE_PATH)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
 
-    contract = AssessmentEligibilityChecker().build_contract(
-        candidate,
-        assessment_request,
-    )
+    contract = _checker().build_contract(candidate, assessment_request)
 
     assert set(contract.excluded_targets) == {
         AssessmentTarget.ACTUAL_INSURANCE_LIABILITY,
@@ -83,10 +86,7 @@ def test_behavioural_targets_remain_allowed() -> None:
     assessment_request = load_assessment_request(FIXTURE_PATH)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
 
-    contract = AssessmentEligibilityChecker().build_contract(
-        candidate,
-        assessment_request,
-    )
+    contract = _checker().build_contract(candidate, assessment_request)
 
     assert contract.allowed_targets == frozenset(
         {
@@ -98,6 +98,33 @@ def test_behavioural_targets_remain_allowed() -> None:
         }
     )
     assert contract.is_partial is True
+
+
+def test_contract_contains_controlled_rule_definitions() -> None:
+    examinee_request = load_examinee_request(FIXTURE_PATH)
+    assessment_request = load_assessment_request(FIXTURE_PATH)
+    candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
+
+    contract = _checker().build_contract(candidate, assessment_request)
+
+    assert tuple(rule.rule_id for rule in contract.applicable_rules) == (
+        "GLOBAL-MULTI-INTENT-01",
+        "GLOBAL-OUT-OF-DOMAIN-01",
+        "GLOBAL-LIVE-DATA-01",
+        "GLOBAL-EVIDENCE-01",
+        "INS-CLAIM-01",
+    )
+    assert all(rule.status is RuleStatus.DRAFT for rule in contract.applicable_rules)
+    assert all(rule.version == "0.1.0" for rule in contract.applicable_rules)
+    assert contract.rule_ids == frozenset(
+        {
+            "GLOBAL-MULTI-INTENT-01",
+            "GLOBAL-OUT-OF-DOMAIN-01",
+            "GLOBAL-LIVE-DATA-01",
+            "GLOBAL-EVIDENCE-01",
+            "INS-CLAIM-01",
+        }
+    )
 
 
 def test_end_to_end_accepts_scoped_findings_and_rejects_overreach() -> None:
