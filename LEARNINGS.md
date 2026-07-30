@@ -1731,4 +1731,266 @@ and:
 
 ---
 
+## From a portfolio evaluator to a three-pillar configurable framework
+
+The first two assessment-runtime commits reduced the gap between documentation
+and code.
+
+They also made the target product shape clearer.
+
+The project is no longer best described as:
+
+```text
+an LLM evaluator
+```
+
+or:
+
+```text
+a collection of LLM-as-a-judge tests
+```
+
+The emerging framework has three configurable pillars:
+
+```text
+1. Examinee Integration
+2. Evaluator Integration
+3. Validation Engine
+```
+
+### Pillar 1 — Examinee Integration
+
+This pillar connects the system under evaluation.
+
+Possible access:
+
+```text
+API
+callable
+CLI
+browser
+file
+manual capture
+replay
+```
+
+A file containing the stimulus and candidate response is a valid input mode when
+its provenance is explicit.
+
+### Pillar 2 — Evaluator Integration
+
+This pillar connects the external semantic evaluator.
+
+It may use similar transport mechanisms, but its contract remains separate:
+
+```text
+CandidateResponse + AssessmentContract
+→ ProposedEvaluatorResult
+```
+
+Shared transport utilities are acceptable.
+
+Shared responsibility is not.
+
+### Pillar 3 — Validation Engine
+
+The most difficult and potentially most valuable part is not the external LLM.
+
+It is the Validation Engine that controls:
+
+```text
+test-definition validity
+Test Basis
+rules and heuristics
+evidence requirements
+assessment eligibility
+allowed scope
+AssessmentContract
+evaluator output
+final claim boundary
+```
+
+The rules catalogue is one component of that engine.
+
+This is an important refinement.
+
+Earlier reasoning sometimes treated `rules and domain packs` as if they were the
+third element by themselves.
+
+The broader and more accurate product element is:
+
+```text
+Validation Engine
+```
+
+### Validation applies before and after the evaluator
+
+Before the evaluator:
+
+```text
+validate the examination
+validate Test Basis
+resolve rules
+check evidence
+select gradable targets
+build the contract
+```
+
+After the evaluator:
+
+```text
+validate case identity
+validate targets
+validate rules and evidence
+validate verdicts
+reject prohibited claims
+separate technical error
+bound the final conclusion
+```
+
+### Configurable does not mean arbitrary
+
+All three pillars should be configurable.
+
+The framework should explain:
+
+- what can be changed
+- how to extend it
+- what effect a change has
+- which invariants cannot be bypassed
+
+Examples of protected invariants:
+
+```text
+missing mandatory evidence blocks factual verdict
+mismatched case_id blocks all proposed findings
+technical error is not examinee failure
+partial scope cannot create universal score
+unknown or deprecated rule cannot silently become authority
+```
+
+Therefore:
+
+> **Configuration may select behaviour, but it may not silently violate
+> assessment invariants.**
+
+### Current implementation state
+
+The first runtime slice now implements:
+
+```text
+CandidateResponse
+ProposedEvaluatorResult
+ExamineePort
+EvaluatorPort
+ReplayExamineeAdapter
+StubEvaluatorAdapter
+AssessmentEligibilityChecker
+AssessmentContract
+EvaluationResultValidator
+ScopedEvaluationResult
+```
+
+The second slice adds controlled rejection for:
+
+```text
+unknown rule
+invented evidence
+prohibited claim
+disallowed verdict
+mismatched case_id
+malformed evaluator output
+```
+
+The conceptual-to-runtime gap still exists, but it is no longer absolute.
+
+### Development workflow decision
+
+The Validation Engine should be developed in small SDLC/STLC sprints.
+
+The project will not create a long-lived parallel version branch.
+
+Preferred workflow:
+
+```text
+main
+→ always runnable and tested
+
+short-lived feature branch
+→ one vertical slice or decision
+
+Pull Request
+→ goal, scope, Test Basis, acceptance criteria, tests, limitations
+
+merge
+→ only after review and green evidence
+
+tag
+→ completed roadmap milestone
+```
+
+Example branches:
+
+```text
+feature/runtime-rule-catalogue
+feature/assessment-contract-builder
+feature/bounded-evaluator-prompt
+feature/live-evaluator-adapter
+```
+
+### Why SDLC and STLC are both required
+
+For this framework, a technically correct implementation can still encode the
+wrong evaluation behaviour.
+
+Every sprint must ask:
+
+```text
+SDLC:
+Was the software implemented correctly?
+
+STLC:
+What evidence shows that the evaluation decision is correct or correctly
+limited?
+```
+
+The runtime rule-catalogue sprint, for example, needs both:
+
+```text
+parser and data-contract tests
++
+applicability, missing-rule, deprecated-rule, and claim-boundary cases
+```
+
+### Milestone tags
+
+The intended milestone tags are:
+
+```text
+v0.3.0-runtime-bridge
+v0.4.0-bounded-evaluator
+v0.5.0-controlled-live-validation
+```
+
+These tags document evidence-backed maturation.
+
+They do not imply production readiness.
+
+### Current next step
+
+The next branch should be:
+
+```text
+feature/runtime-rule-catalogue
+```
+
+Its goal is not to create a complete rules engine.
+
+Its goal is:
+
+> **Replace opaque rule IDs with a minimal controlled, versioned runtime rule
+> definition inside the Validation Engine.**
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —

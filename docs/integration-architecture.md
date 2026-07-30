@@ -6,6 +6,18 @@
 > validation boundaries. It does not commit the project to implementing every
 > transport or provider.
 
+Integration forms two of the framework's three configurable pillars:
+
+```text
+Examinee Integration
+Evaluator Integration
+```
+
+The third pillar, the Validation Engine, consumes and constrains their
+normalised outputs.
+
+See [`framework-architecture.md`](framework-architecture.md).
+
 ---
 
 ## 1. Problem
@@ -121,6 +133,47 @@ The evaluator adapter may need to:
 The evaluator adapter does not decide whether the proposed findings are valid.
 
 That remains the responsibility of deterministic result validation.
+
+---
+
+
+## 3.5 Shared transport infrastructure, separate role contracts
+
+The two pillars may reuse technical utilities:
+
+```text
+HTTP client
+authentication helper
+file loader
+JSON parser
+subprocess runner
+browser session
+retry and timeout utilities
+```
+
+They must not reuse one unbounded semantic contract.
+
+```text
+shared transport
+is allowed
+
+shared role authority
+is not
+```
+
+A file loader, for example, may support both:
+
+```text
+prompt + candidate response file
+```
+
+and:
+
+```text
+saved proposed evaluator result file
+```
+
+Each output still enters a different role-specific envelope and validation path.
 
 ---
 
@@ -321,6 +374,45 @@ It must still be traceable.
 
 ---
 
+
+## 5.7 File-based workflows
+
+### Examinee file
+
+May contain:
+
+```text
+stimulus
+candidate response
+system / model metadata
+provenance
+evidence references
+```
+
+### Evaluator file
+
+May contain:
+
+```text
+case identifier
+proposed findings
+not-assessed targets
+rule references
+evidence references
+raw output
+technical metadata
+```
+
+File input does not bypass framework validation.
+
+A loaded evaluator result must pass the same case, target, rule, evidence,
+verdict, and claim checks as a live result.
+
+Synthetic, manually captured, replayed, and captured-live sources must remain
+distinguishable.
+
+---
+
 ## 6. Technical status is not substantive verdict
 
 Each adapter can fail independently from the system behaviour being evaluated.
@@ -479,34 +571,42 @@ A technically possible integration may still be organisationally prohibited.
 
 ---
 
-## 11. Initial implementation scope
+## 11. Implementation status and next integration work
 
-### NOW
-
-Implement only the minimum required by the first vertical slice:
+### Implemented
 
 ```text
-CandidateResponse contract
-ProposedEvaluatorResult contract
+CandidateResponse
+ProposedEvaluatorResult
 ExamineePort
 EvaluatorPort
 ReplayExamineeAdapter
 StubEvaluatorAdapter
-adapter contract tests
 ```
 
-### NEXT
+These support the current replay-first assessment slice.
 
-After the assessment pipeline is stable:
+### Current priority outside the integration layer
+
+The next sprint belongs primarily to the Validation Engine:
+
+```text
+feature/runtime-rule-catalogue
+```
+
+Integration breadth should not expand while the assessment contract still
+contains opaque rule IDs.
+
+### Next integration work
+
+After the runtime rules and contract path are stable:
 
 ```text
 adapt existing provider integration behind EvaluatorPort
-add one live ExamineePort adapter required by the selected experiment
+add one examinee adapter required by a controlled experiment
 ```
 
-### LATER
-
-Only when justified:
+### Later, only when required
 
 ```text
 Python callable adapter
@@ -516,11 +616,10 @@ manual-capture helper
 additional API providers
 ```
 
-The architecture is broad.
+The architecture remains broad.
 
-The implementation remains narrow.
+Implementation remains evidence-led and narrow.
 
----
 
 ## 12. Acceptance questions
 

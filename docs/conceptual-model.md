@@ -1118,6 +1118,77 @@ verdict.
 ---
 
 
+
+## 10.4 Three configurable framework pillars
+
+The target framework has three public product pillars.
+
+```text
+1. Examinee Integration
+2. Evaluator Integration
+3. Validation Engine
+```
+
+### Examinee Integration
+
+Normalises access to the system under evaluation.
+
+```text
+TestStimulus
+        ↓
+ExamineePort
+        ↓
+CandidateResponse
+```
+
+### Evaluator Integration
+
+Normalises access to the bounded semantic evaluator.
+
+```text
+CandidateResponse
++
+AssessmentContract
+        ↓
+EvaluatorPort
+        ↓
+ProposedEvaluatorResult
+```
+
+### Validation Engine
+
+Controls and validates the examination protocol.
+
+```text
+before evaluator:
+test definition
+Test Basis
+rules
+evidence
+eligibility
+scope
+contract
+
+after evaluator:
+case identity
+targets
+rules
+evidence
+verdicts
+prohibited claims
+scoped result
+```
+
+The controlled rules catalogue belongs inside the Validation Engine.
+
+It is not the whole engine.
+
+All three pillars may be configurable.
+
+Configuration remains subject to framework invariants.
+
+---
+
 ## 10.5 Integration boundary — roles and contracts, not transports
 
 The framework communicates with two external roles:
@@ -1239,72 +1310,69 @@ REGULATED-DOMAIN EVALUATION OBJECTIVE
                 ↓
             STIMULUS
                 ↓
-      SYSTEM UNDER EVALUATION
-            "examinee"
-                ↓
-        EXAMINEE ADAPTER
-                ↓
-        CANDIDATE RESPONSE
-                ↓
+┌─────────────────────────────────────┐
+│  PILLAR 1 — EXAMINEE INTEGRATION   │
+│                                     │
+│ API / callable / CLI / browser /   │
+│ file / replay                       │
+└──────────────────┬──────────────────┘
+                   ↓
+           CANDIDATE RESPONSE
+                   ↓
               +
-          TEST BASIS
-   ┌────────────────────────────┐
-   │ Facts / ground truth       │
-   │ Controlled rules          │
-   │ Expected strategy          │
-   │ Behavioural constraints    │
-   │ Required evidence          │
-   │ Gradability prerequisites  │
-   │ Provenance / applicability │
-   └────────────────────────────┘
-                ↓
-   ASSESSMENT ELIGIBILITY
-      & SCOPE DETERMINATION
-                ↓
-       ASSESSMENT CONTRACT
-   ┌────────────────────────────┐
-   │ Applicable rules           │
-   │ Available evidence         │
-   │ Missing evidence           │
-   │ Allowed targets            │
-   │ Excluded targets           │
-   │ Allowed verdicts           │
-   │ Prohibited claims          │
-   └────────────────────────────┘
-                ↓
-        EVALUATOR ADAPTER
-                ↓
-    BOUNDED EXTERNAL EVALUATOR
-  "semantic executor of the protocol"
-                ↓
-    PROPOSED EVALUATOR RESULT
-                ↓
- DETERMINISTIC RESULT VALIDATION
-                ↓
-        EVALUATION RESULT
-   ┌────────────────────────────┐
-   │ Technical status           │
-   │ Assessment scope           │
-   │ Accepted findings          │
-   │ Rejected findings          │
-   │ Evidence / rationale       │
-   │ Rule coverage              │
-   │ Review / escalation        │
-   └────────────────────────────┘
+             TEST BASIS
+                   ↓
+┌─────────────────────────────────────┐
+│   PILLAR 3 — VALIDATION ENGINE     │
+│          PRE-EVALUATION             │
+│                                     │
+│ test-definition validation          │
+│ controlled rules and heuristics     │
+│ evidence requirements               │
+│ assessment eligibility              │
+│ allowed and excluded targets        │
+│ verdict and claim constraints       │
+└──────────────────┬──────────────────┘
+                   ↓
+           ASSESSMENT CONTRACT
+                   ↓
+┌─────────────────────────────────────┐
+│ PILLAR 2 — EVALUATOR INTEGRATION   │
+│                                     │
+│ API / callable / CLI / file /      │
+│ replay                              │
+└──────────────────┬──────────────────┘
+                   ↓
+       PROPOSED EVALUATOR RESULT
+                   ↓
+┌─────────────────────────────────────┐
+│   PILLAR 3 — VALIDATION ENGINE     │
+│           POST-EVALUATION           │
+│                                     │
+│ case / target validation            │
+│ rule and evidence validation        │
+│ verdict constraints                 │
+│ prohibited claims                   │
+│ technical-status separation         │
+│ scoped findings                     │
+│ claim-boundary enforcement          │
+└──────────────────┬──────────────────┘
+                   ↓
+        SCOPED EVALUATION RESULT
 ```
 
 The framework controls:
 
 ```text
+how external systems connect
 what may be assessed
-which rules apply
-which evidence may support the assessment
-which verdicts are permitted
+which rules and evidence apply
 which evaluator findings may be accepted
+what final claim the result may support
 ```
 
-It does not control private model cognition and does not create missing domain
-authority.
+It does not create missing domain authority or guarantee private evaluator
+reasoning.
 
 
 # 12. High-level requirements — working draft v0.2
@@ -1730,6 +1798,65 @@ the system under evaluation.
 
 ---
 
+## HLR-29 — The framework shall expose three configurable pillars
+
+The product architecture shall distinguish:
+
+```text
+Examinee Integration
+Evaluator Integration
+Validation Engine
+```
+
+Each pillar shall expose explicit responsibilities and extension points.
+
+---
+
+## HLR-30 — The Validation Engine shall validate the examination before and after semantic evaluation
+
+Before evaluator invocation, the engine shall validate or determine:
+
+- test-definition coherence
+- Test Basis
+- applicable rules
+- evidence sufficiency
+- assessment eligibility
+- allowed scope
+- verdict constraints
+
+After evaluator output, the engine shall validate:
+
+- case identity
+- targets
+- rules
+- evidence references
+- verdicts
+- prohibited claims
+- technical status
+- claim boundaries
+
+---
+
+## HLR-31 — Configuration shall not bypass assessment invariants
+
+Configurable adapters, rule packs, evidence sources, targets, or verdicts shall
+remain subject to deterministic consistency checks.
+
+Invalid configuration shall produce a process or configuration error rather
+than an unsupported substantive verdict.
+
+---
+
+## HLR-32 — File-based integration shall preserve role and provenance
+
+A file-based candidate response or evaluator result shall be processed through
+the same role-specific contracts and validation as a live integration.
+
+Synthetic, manual, replayed, and captured-live provenance shall remain
+distinguishable.
+
+---
+
 
 ## 13. Scope discipline — broad understanding, narrow implementation
 
@@ -1811,35 +1938,42 @@ Those should be derived from validation design, not invented prematurely.
 
 ## 15. Next conceptual step
 
-The next conceptual validation target is deliberately narrow:
+The first assessment-grounded runtime slices now exist.
+
+Implemented:
 
 ```text
-one mixed-domain insurance scenario
-+
-a small controlled rule subset
-+
-normalised replay input
-+
-explicit available and missing evidence
-+
-behaviour gradable
-+
-factual outcome not gradable
-+
-deterministic rejection of evaluator overreach
+normalised contracts
+separate ports
+replay examinee
+stub evaluator
+eligibility
+AssessmentContract
+result validation
+INS-MIXED-001
+boundary-violation cases
 ```
 
-Before coding the runtime slice:
+The next conceptual-to-runtime boundary is:
 
-1. validate the mixed-domain case and expected strategy
-2. review the first shared and insurance-specific rules
-3. define minimum candidate-response and evaluator-result envelopes
-4. define separate examinee and evaluator ports
-5. define the minimum conceptual assessment contract
-6. define deterministic rejection conditions for evaluator output
-7. derive measurable acceptance criteria
-8. only then commit runtime classes, enums, or YAML schemas
+```text
+opaque rule IDs
+        ↓
+controlled versioned RuleDefinition objects
+        ↓
+resolved rules inside AssessmentContract
+```
 
-The conceptual model is expected to evolve.
+Before coding the runtime rule catalogue:
 
-That is a feature of the research process, not documentation drift.
+1. define the smallest useful `RuleDefinition`
+2. identify required invariants
+3. define allowed rule statuses
+4. define duplicate and unknown-rule behaviour
+5. define applicability and evidence semantics
+6. define controlled positive and negative cases
+7. define the public construction path for `AssessmentContract`
+8. keep live evaluator integration out of this sprint
+
+The project should then continue through short-lived feature branches governed by
+the SDLC/STLC workflow in `development-workflow.md`.

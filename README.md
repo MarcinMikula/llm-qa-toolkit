@@ -140,57 +140,95 @@ Today, the most accurate description is:
 The current code is the runnable prototype. The methodology and meta-requirements
 define what a credible future framework would need to control.
 
-### Intended framework role
+### Three configurable framework pillars
 
-The target architecture assumes two externally supplied AI roles:
+The target product now has three explicit pillars:
 
 ```text
-EXTERNAL SYSTEM UNDER EVALUATION
-          "examinee"
-                │
-                ▼
-┌───────────────────────────────────────────────────────┐
-│              EVALUATION FRAMEWORK                    │
-│                                                       │
-│  - validates test intent and scenario                 │
-│  - validates the Test Basis                           │
-│  - controls model-visible and evaluator-only context  │
-│  - selects and constrains evaluation strategy         │
-│  - enforces structured evaluator output               │
-│  - determines gradability and allowed scope           │
-│  - records evidence, findings, and rationale          │
-│  - applies review and escalation rules                │
-└────────────────────────┬──────────────────────────────┘
-                         │
-                         ▼
-              EXTERNAL LLM EVALUATOR
-                    "examiner"
-                         │
-                         ▼
-              SCOPED EVALUATION RESULT
+1. Examinee Integration
+2. Evaluator Integration
+3. Validation Engine
 ```
+
+#### 1. Examinee Integration
+
+Connects the system under evaluation:
+
+```text
+API │ callable │ CLI │ browser │ file │ replay
+        ↓
+CandidateResponse
+```
+
+The examinee may be a live chatbot, local model, agent, manually captured
+response, or a file containing a prompt-response pair with provenance.
+
+#### 2. Evaluator Integration
+
+Connects an external semantic evaluator:
+
+```text
+CandidateResponse
++
+AssessmentContract
+        ↓
+API │ callable │ CLI │ file │ replay
+        ↓
+ProposedEvaluatorResult
+```
+
+The evaluator and examinee may share transport utilities, but they keep separate
+role contracts.
+
+#### 3. Validation Engine
+
+The Validation Engine controls the examination protocol before and after the
+external evaluator:
+
+```text
+test definition
+Test Basis
+controlled rules and heuristics
+evidence requirements
+assessment eligibility
+target and verdict constraints
+AssessmentContract construction
+evaluator-result validation
+scoped findings
+claim boundaries
+```
+
+The rules catalogue is an important component of the Validation Engine, but it
+is not the whole engine.
 
 The framework is not intended to become the all-knowing judge.
 
 Its role is to:
 
-> **control the evaluation protocol, the conditions under which a verdict may be
-> issued, and the boundaries of what the evaluator is allowed to claim.**
+> **make the integration points configurable while keeping evaluation scope,
+> evidence, authority, and conclusions explicit, traceable, and testable.**
 
-It may constrain:
+### Configurable does not mean uncontrolled
 
-- what context and evidence the evaluator receives
-- which rubric and response schema it must use
-- which assessment targets are gradable
-- when evidence is insufficient
-- how technical errors differ from substantive findings
-- when human or domain-expert review is required
-- whether the result is internally consistent and traceable
+Users should eventually be able to configure:
 
-It cannot guarantee that an external evaluator truly understands the domain,
-interprets every source correctly, or is more competent than the evaluated
-system. Prompting and output schemas can constrain an evaluator, but they cannot
-manufacture missing expertise or ground truth.
+```text
+examinee adapter
+evaluator adapter
+input source
+domain pack
+rule versions
+requested targets
+evidence sources
+allowed verdicts
+```
+
+But configuration must not bypass assessment invariants.
+
+For example, missing mandatory evidence cannot silently permit a factual
+`PASS/FAIL`, and findings from a different `case_id` cannot be accepted.
+
+See [`docs/framework-architecture.md`](docs/framework-architecture.md).
 
 ### What the framework should validate about a test
 
@@ -217,6 +255,8 @@ In other words:
 
 - [`LEARNINGS.md`](LEARNINGS.md) — chronological project reasoning and discoveries
 - [`docs/conceptual-model.md`](docs/conceptual-model.md) — current conceptual model and HLR draft
+- [`docs/framework-architecture.md`](docs/framework-architecture.md) — three configurable pillars and their current runtime mapping
+- [`docs/development-workflow.md`](docs/development-workflow.md) — SDLC/STLC sprint, branch, PR, and milestone-release process
 - [`docs/rules-and-domain-packs.md`](docs/rules-and-domain-packs.md) — controlled rules layer, bounded evaluator protocol, and domain-pack model
 - [`docs/integration-architecture.md`](docs/integration-architecture.md) — transport-neutral examinee/evaluator ports, adapters, replay, and live-validation boundaries
 - [`docs/roadmap.md`](docs/roadmap.md) — current project position, next vertical slice, validation path, and v1.0 gates
@@ -380,7 +420,9 @@ The LLM should be used where semantic interpretation is actually necessary:
 
 ### Rules are not a complete domain rulebook
 
-The rules layer is defined as:
+The rules catalogue is a core component of the broader Validation Engine.
+
+It is defined as:
 
 > **A controlled, versioned, and continuously developed catalogue of explicit
 > constraints, applicability conditions, evidence requirements, permitted
@@ -806,113 +848,114 @@ Thresholds are set per test case based on risk:
 
 ## Where the project is now
 
-The project currently has two maturity levels:
+The implementation gap has started to narrow.
 
 ```text
-RUNNING CODE
-→ judge-centric prototype with heuristics, scores, mocks, pytest, CI, and Allure
+LEGACY RUNNING CODE
+→ heuristics, LLM-assisted scoring, mocks, pytest, CI, and Allure
 
-DOCUMENTED TARGET MODEL
-→ Test Basis, eligibility, scoped gradability, controlled rules,
-  bounded evaluator, and traceable findings
+NEW ASSESSMENT RUNTIME
+→ CandidateResponse
+→ separate examinee/evaluator ports
+→ replay examinee and stub evaluator
+→ assessment eligibility
+→ AssessmentContract
+→ deterministic result validation
+→ ScopedEvaluationResult
 ```
 
-The central gap is the runtime bridge between them.
+The first runtime slice for `INS-MIXED-001` now proves that the framework can:
 
-The next milestone is **not** another evaluator, another provider, or another
-domain.
+- allow behavioural assessment independently from factual assessment
+- exclude factual targets when evidence is missing
+- preserve and reject evaluator overreach
+- reject unknown rules, invented evidence, prohibited claims, and invalid verdicts
+- reject findings from a mismatched `case_id`
+- represent malformed evaluator output as a technical evaluation error
+- keep adapter failure separate from substantive examinee failure
 
-It is the smallest end-to-end slice that proves:
+The gap is not closed.
+
+The Validation Engine still needs executable rule definitions, test-definition
+validation, a formal contract builder, and a bounded live-evaluator request and
+result path.
+
+The next sprint is therefore:
 
 ```text
-a response can be behaviourally assessed
-while an unsupported factual target is blocked
-and evaluator overreach is rejected
+feature/runtime-rule-catalogue
 ```
 
-The first slice should run without paid model calls by using replay and stub
-adapters.
-
-See [`docs/roadmap.md`](docs/roadmap.md) for the complete staged roadmap.
+See [`docs/roadmap.md`](docs/roadmap.md) and
+[`docs/development-workflow.md`](docs/development-workflow.md).
 
 ---
 
 ## Roadmap
 
-### Current baseline — implemented
+### Implemented baseline
 
-- ✅ Runnable heuristic and LLM-assisted evaluation prototype
-- ✅ Mock mode, pytest, CI, regression baselines, and Allure reporting
-- ✅ Initial hallucination, prompt-injection, quality, regression, and edge cases
-- ✅ Conceptual model for Test Basis, gradability, scoped findings, and claim boundaries
-- ✅ Bounded-evaluator direction and controlled rules/domain-pack model
-- ✅ First mixed-domain insurance case as a design artefact
+- ✅ Legacy heuristic and LLM-assisted evaluation prototype
+- ✅ Mock mode, pytest, CI, regression baselines, and Allure
+- ✅ Conceptual model for Test Basis, gradability, rules, evaluator authority, and claim boundaries
+- ✅ Three-pillar target architecture
+- ✅ Transport-neutral `ExamineePort` and `EvaluatorPort`
+- ✅ Replay examinee and stub evaluator
+- ✅ Executable `INS-MIXED-001` assessment slice
+- ✅ Deterministic eligibility and result validation
+- ✅ Evaluator boundary-violation tests
 
-### Current milestone — runtime bridge
+### Current Phase 2 sprint
 
 ```text
-normalised integration contracts
-        ↓
-replay examinee + stub evaluator
-        ↓
-deterministic AssessmentContract
-        ↓
-bounded evaluator invocation
-        ↓
-deterministic result validation
-        ↓
-scoped findings
+feature/runtime-rule-catalogue
 ```
+
+Goal:
+
+> Replace opaque rule IDs with controlled, versioned runtime definitions inside
+> the Validation Engine.
 
 Current priorities:
 
-- ⏳ Define minimum `CandidateResponse` and evaluator-result envelopes
-- ⏳ Define separate examinee and evaluator ports
-- ⏳ Implement replay/stub adapters and adapter contract tests
-- ⏳ Implement deterministic assessment eligibility and scope selection
-- ⏳ Implement post-evaluator rejection of out-of-scope findings
-- ⏳ Execute `INS-MIXED-001` end to end without live paid models
-- ⏳ Prove that behaviour may be graded while unsupported factual outcomes remain `NOT_ASSESSED`
+- ⏳ Define the minimum runtime `RuleDefinition`
+- ⏳ Load and validate the first five controlled rules
+- ⏳ Reject duplicate, unknown, malformed, or deprecated rules
+- ⏳ Preserve version, status, source, applicability, targets, and evidence requirements
+- ⏳ Build `AssessmentContract` from resolved rule definitions
+- ⏳ Keep `INS-MIXED-001` green end to end
+- ⏳ Remove the brittle test-only contract mutation when the public builder path exists
 
-### Next milestone — controlled live integration
+### Later Phase 2 slices
 
-Only after the replay slice is stable:
+```text
+feature/assessment-contract-builder
+feature/bounded-evaluator-prompt
+```
 
-- ⬜ Adapt the existing API integration behind the evaluator port
-- ⬜ Add one examinee integration required by a concrete validation target
-- ⬜ Support non-API access where necessary through callable, CLI, browser, or manual-capture adapters
-- ⬜ Run a small controlled live experiment with repeated outputs
-- ⬜ Compare framework decisions with independently justified human expectations
-- ⬜ Record cost, latency, instability, and adapter-specific failure modes
+### Controlled live integration
 
-### Later Pre-v1.0 validation
+Only after the replay path and Validation Engine contracts are stable:
 
-- ⬜ Validate the first controlled rule subset
-- ⬜ Review scoring and threshold assumptions
-- ⬜ Decide which legacy evaluators remain useful under scoped gradability
-- ⬜ Validate evaluator behaviour on known-good, known-bad, borderline, ambiguous, and insufficient-evidence cases
-- ⬜ Define measurable v1.0 claim and release boundaries
+- ⬜ place the existing provider behind `EvaluatorPort`
+- ⬜ add one examinee adapter required by a concrete experiment
+- ⬜ support file, callable, CLI, or browser access only when required
+- ⬜ run a small repeated live experiment
+- ⬜ compare results with independently justified expectations
 
-### v1.0 — Credible Evaluation Foundation
+### Milestone tags
 
-`v1.0` remains an evidence threshold, not a feature count.
+```text
+v0.3.0-runtime-bridge
+v0.4.0-bounded-evaluator
+v0.5.0-controlled-live-validation
+```
 
-It should demonstrate:
+Tags will mark completed evidence milestones, not architectural plans.
 
-- a transport-neutral evaluation pipeline
-- bounded evaluator authority
-- deterministic eligibility and result validation
-- controlled and versioned rule use
-- explicit `FAIL` versus `NOT_ASSESSED` versus evaluation-process error
-- scoped live-model evidence
-- documented limitations and claim boundaries
-- reproducible replay-based regression tests
-
-Adapter breadth, domain breadth, and multi-judge experiments are not v1.0 goals
-unless validation evidence proves they are necessary.
-
-See [`docs/roadmap.md`](docs/roadmap.md) for stages, exit criteria, and deferred
-directions.
+See [`docs/roadmap.md`](docs/roadmap.md) for exit criteria and
+[`docs/development-workflow.md`](docs/development-workflow.md) for the sprint and
+branch model.
 
 ---
 

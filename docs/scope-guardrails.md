@@ -775,6 +775,69 @@ The project should remain runnable and reviewable without external spending.
 ---
 
 
+
+## SG-22 — Configurable does not mean invariant-free
+
+The framework may expose configuration for:
+
+```text
+adapters
+input sources
+providers
+domain packs
+rule versions
+evidence
+targets
+verdict policies
+```
+
+Configuration shall not bypass deterministic assessment invariants.
+
+Invalid configuration must produce a process or configuration error.
+
+It must not produce an unsupported substantive verdict.
+
+---
+
+## SG-23 — The rule catalogue remains a Validation Engine component
+
+The rules catalogue may become one of the most important project artefacts.
+
+It must not be treated as:
+
+- the complete Validation Engine
+- a full industry knowledge base
+- a substitute for Test Basis
+- a source of automatic domain authority
+- a complete regulated-domain rulebook
+
+The Validation Engine also owns:
+
+```text
+test-definition validation
+evidence checks
+eligibility
+contract construction
+result validation
+claim boundaries
+```
+
+---
+
+## SG-24 — Do not create a long-lived parallel implementation truth
+
+The project should not maintain a permanent development branch whose code,
+documentation, and CI state diverge from `main`.
+
+Use short-lived feature branches and evidence-backed Pull Requests.
+
+`main` remains the public project truth.
+
+Milestone tags may record completed phases without implying production maturity.
+
+---
+
+
 # 8. Scope classification model
 
 Every newly discovered idea should be classified before implementation.
@@ -789,9 +852,10 @@ Use when the capability:
 - can be tested with available evidence
 - does not depend on several unvalidated subsystems
 
-Current runtime-bridge examples:
+Current runtime-bridge state:
 
 ```text
+IMPLEMENTED
 minimum CandidateResponse contract
 minimum ProposedEvaluatorResult contract
 separate ExamineePort and EvaluatorPort
@@ -800,6 +864,10 @@ StubEvaluatorAdapter
 assessment eligibility
 result validation
 INS-MIXED-001 end-to-end replay
+evaluator boundary violations
+
+CURRENT
+minimum controlled runtime rule catalogue
 ```
 
 ## RECORD — represent conceptually or as metadata
@@ -892,6 +960,9 @@ The project may be drifting when:
 - rule count grows faster than rule review and validation evidence
 - domain packs are described as complete industry knowledge
 - missing rule coverage is hidden by evaluator improvisation
+- configuration options can bypass assessment invariants
+- the rules catalogue is presented as the complete Validation Engine
+- a long-lived development branch becomes more current than main
 - dashboards appear before trustworthy findings
 - workflows are built before review rules are validated
 - domain content is generated internally without accountable ownership

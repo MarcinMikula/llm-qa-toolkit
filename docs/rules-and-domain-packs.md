@@ -38,6 +38,12 @@ deterministic result validation
 
 Rules are a central part of that protocol.
 
+They are a component of the broader **Validation Engine**, which also validates
+test definitions, evidence, eligibility, assessment contracts, evaluator
+results, and claim boundaries.
+
+See [`framework-architecture.md`](framework-architecture.md).
+
 ---
 
 ## 2. Core definition
@@ -629,9 +635,6 @@ safe missing-rule behaviour
 
 ## 14. Validation questions for the first slice
 
-The first rules experiment should run through normalised replay and evaluator
-contracts rather than depend on a specific live provider.
-
 The first rules experiment should answer:
 
 ```text
@@ -648,17 +651,44 @@ The slice does not need to prove complete domain correctness.
 
 ---
 
+
+## 14.5 Current runtime status
+
+The first assessment slices currently use rule identifiers inside the
+AssessmentContract.
+
+Implemented validation can reject:
+
+- unknown rule references returned by the evaluator
+- other target, evidence, verdict, claim, and case boundary violations
+
+Not yet implemented:
+
+```text
+runtime RuleDefinition objects
+rule version and status enforcement
+duplicate-rule detection
+rule-source preservation in the contract
+rule applicability resolution from a catalogue
+```
+
+The next sprint should implement the minimum controlled runtime catalogue.
+
+It should not create a large generic rules engine.
+
+---
+
 ## 15. Implementation boundary
 
 ### NOW
 
-- document the controlled rules model
-- validate one mixed-domain case
-- define a small rule subset
-- define minimum normalised integration envelopes
-- define assessment-contract requirements
-- define evaluator-result rejection conditions
-- run the first slice with replay examinee input and a stub evaluator
+- preserve the controlled rules model
+- define the minimum runtime `RuleDefinition`
+- load the first small rule subset
+- validate duplicate, unknown, malformed, and deprecated rules
+- preserve version, status, source, targets, and evidence requirements
+- resolve rule definitions into the AssessmentContract
+- keep `INS-MIXED-001` green end to end
 
 ### RECORD
 

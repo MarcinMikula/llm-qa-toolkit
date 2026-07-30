@@ -24,16 +24,18 @@ CURRENT CODE BASELINE
 ```
 
 ```text
-DOCUMENTED TARGET ARCHITECTURE
-├── explicit Test Basis
-├── assessment eligibility
-├── scoped gradability
-├── controlled rules
-├── domain evaluation packs
-├── bounded external evaluator
-├── deterministic result validation
-├── traceable findings
-└── claim boundaries
+THREE-PILLAR TARGET ARCHITECTURE
+├── Examinee Integration
+├── Evaluator Integration
+└── Validation Engine
+    ├── explicit Test Basis
+    ├── assessment eligibility
+    ├── scoped gradability
+    ├── controlled rules and heuristics
+    ├── AssessmentContract construction
+    ├── deterministic result validation
+    ├── traceable findings
+    └── claim boundaries
 ```
 
 The project is currently between those two states.
@@ -55,6 +57,8 @@ The roadmap follows:
 
 > **Adapter breadth follows validation need, not architectural imagination.**
 
+> **Main remains runnable; implementation advances through short-lived, evidence-backed branches.**
+
 ---
 
 ## 3. Phase map
@@ -63,7 +67,7 @@ The roadmap follows:
 |---|---|---|---|
 | 0 | Runnable evaluation prototype | ✅ Implemented | Mock-based tests, CI, Allure |
 | 1 | Conceptual reframing and scope control | ✅ Documented | Conceptual model, HLRs, decisions, guardrails |
-| 2 | Assessment-grounded runtime bridge | 🔶 Current | Deterministic end-to-end replay slice |
+| 2 | Assessment-grounded runtime bridge | 🔶 Current, partially implemented | Replay slice, boundary validation, runtime rules next |
 | 3 | Controlled live integration | ⬜ Planned | Small repeated live-model experiment |
 | 4 | Evaluator and rule validation | ⬜ Planned | Human-justified labelled cases and failure analysis |
 | 5 | Legacy scoring/evaluator migration | ⬜ Planned | Evidence-based keep/change/remove decisions |
@@ -150,21 +154,23 @@ It remains open to revision as implementation exposes contradictions.
 
 ## Status
 
-🔶 **Current phase**
+🔶 **Current phase — first two implementation slices complete**
 
 ## Objective
 
-Prove that the framework can:
+Prove that the three-pillar architecture can:
 
 ```text
-allow a justified behavioural assessment
-while blocking an unsupported factual assessment
-and rejecting evaluator overreach
+ingest a candidate response
+validate whether and what may be assessed
+constrain an external evaluator
+validate its proposed result
+return a scoped outcome
 ```
 
 without paid live-model access.
 
-## Vertical slice
+## Implemented runtime flow
 
 ```text
 INS-MIXED-001
@@ -186,98 +192,135 @@ EvaluationResultValidator
 ScopedEvaluationResult
 ```
 
-## Step 2.1 — Pre-coding acceptance criteria
+## Completed Sprint 2A — executable assessment contract
 
-Define:
+Implemented:
 
-- minimum input and output information
-- allowed assessment targets
-- excluded targets
-- required and available evidence
-- permitted verdicts
-- prohibited findings
-- technical error taxonomy
-- traceability requirements
+- normalised `CandidateResponse`
+- normalised `ProposedEvaluatorResult`
+- `TechnicalStatus`
+- separate `ExamineePort` and `EvaluatorPort`
+- `ReplayExamineeAdapter`
+- `StubEvaluatorAdapter`
+- deterministic assessment eligibility
+- `AssessmentContract`
+- `EvaluationResultValidator`
+- `ScopedEvaluationResult`
+- synthetic `INS-MIXED-001`
+- technical versus substantive status separation
 
-## Step 2.2 — Normalised integration contracts
+## Completed Sprint 2B — evaluator boundary violations
 
-Introduce the smallest useful concepts:
+Implemented deterministic rejection for:
+
+- target outside contract
+- unknown rule reference
+- unavailable or invented evidence
+- prohibited claim
+- verdict outside target policy
+- mismatched `case_id`
+- malformed evaluator result
+- unsupported overall score under partial scope
+
+Rejected findings remain traceable and do not automatically fail the examinee.
+
+## Current Sprint 2C — runtime rule catalogue
+
+Recommended branch:
 
 ```text
-CandidateResponse
-ProposedEvaluatorResult
-TechnicalStatus
-ExamineePort
-EvaluatorPort
+feature/runtime-rule-catalogue
 ```
 
-Avoid broad provider abstractions.
+Sprint Goal:
 
-## Step 2.3 — Replay and stub adapters
+> Replace opaque rule IDs with controlled, versioned runtime rule definitions
+> inside the Validation Engine.
 
-Implement:
+Minimum scope:
 
-```text
-ReplayExamineeAdapter
-StubEvaluatorAdapter
-```
-
-Add shared adapter contract tests.
-
-## Step 2.4 — Deterministic assessment contract
-
-Implement the smallest logic for:
-
-- selected applicable rules
+- `RuleDefinition`
+- version
+- status
+- source
+- evaluator instruction
+- applicable targets
 - required evidence
-- missing evidence
-- allowed targets
-- excluded targets
-- allowed verdicts
-- prohibited claims
+- permitted conclusions or constraints
+- catalogue loading
+- duplicate detection
+- unknown-rule failure
+- malformed-rule failure
+- deprecated-rule exclusion
+- resolved rules in `AssessmentContract`
 
-## Step 2.5 — Deterministic result validation
+Out of scope:
 
-Reject proposed findings that:
+- broad rules engine
+- hundreds of domain rules
+- jurisdiction engine
+- live evaluator
+- generic configuration framework
 
-- target excluded content
-- use nonexistent or inapplicable rules
-- cite unavailable evidence
-- use prohibited verdicts
-- convert `NOT_ASSESSED` into `FAIL`
-- create an unsupported overall score
-- exceed the assessment claim boundary
+## Planned Sprint 2D — AssessmentContract builder
 
-## Step 2.6 — First end-to-end proof
-
-Run `INS-MIXED-001`.
-
-Expected scope:
+Recommended branch:
 
 ```text
-GRADABLE
-├── intent separation
-├── insurance response strategy
-├── domain-boundary compliance
-├── live-data handling
-└── unsupported certainty
-
-NOT ASSESSED
-├── actual insurance liability
-├── actual Warsaw weather
-└── medical / nutritional correctness
+feature/assessment-contract-builder
 ```
+
+Goal:
+
+- validate test definition
+- resolve requested rule definitions
+- validate evidence and applicability
+- build the public runtime contract
+- remove test-only contract reconstruction such as `dataclasses.replace()`
+
+## Planned Sprint 2E — bounded evaluator request and parser
+
+Recommended branch:
+
+```text
+feature/bounded-evaluator-prompt
+```
+
+Goal:
+
+- serialize only allowed Test Basis and rules
+- state missing evidence explicitly
+- constrain targets and verdicts
+- parse structured proposed findings
+- preserve raw output
+- classify malformed output as process error
+
+No live provider is required for Phase 2E.
 
 ## Phase 2 exit criteria
 
-- [ ] Same replay input produces deterministic eligibility and validation results
-- [ ] Behavioural targets can be allowed independently from factual targets
-- [ ] Missing evidence does not create examinee `FAIL`
-- [ ] Evaluator is not called for excluded factual assessment, or its excluded findings are rejected
-- [ ] Evaluator overreach is preserved and reported, not silently discarded
-- [ ] Technical adapter failure remains distinct from substantive result
-- [ ] No live API or paid model is required
-- [ ] README example can demonstrate `judge can score` versus `judge is allowed to score`
+- [x] Same replay input produces deterministic eligibility and validation results
+- [x] Behavioural targets can be allowed independently from factual targets
+- [x] Missing evidence does not create examinee `FAIL`
+- [x] Evaluator overreach is preserved and rejected
+- [x] Technical adapter failure remains distinct from substantive result
+- [x] No live API or paid model is required
+- [ ] Rule IDs are resolved to controlled runtime definitions
+- [ ] Rule version, status, source, applicability, and evidence requirements are enforced
+- [ ] Public AssessmentContract construction validates configuration invariants
+- [ ] Bounded evaluator request and structured result parser exist
+- [ ] Documentation and examples use the public construction path
+- [ ] Full default mock suite remains green
+
+## Phase 2 milestone tag
+
+Create:
+
+```text
+v0.3.0-runtime-bridge
+```
+
+only when all Phase 2 exit criteria are complete.
 
 ---
 
@@ -491,7 +534,42 @@ Each direction must pass the scope-expansion gate.
 
 ---
 
-## 4. Explicitly not on the current roadmap
+
+## 4. Delivery model
+
+Implementation follows:
+
+```text
+main
+→ runnable and tested
+
+short-lived feature branch
+→ one sprint goal
+
+Pull Request
+→ scope, Test Basis, acceptance criteria, tests, limitations
+
+merge
+→ after review
+
+milestone tag
+→ completed evidence phase
+```
+
+See [`development-workflow.md`](development-workflow.md).
+
+Planned milestone tags:
+
+```text
+v0.3.0-runtime-bridge
+v0.4.0-bounded-evaluator
+v0.5.0-controlled-live-validation
+```
+
+These are pre-v1 evidence markers.
+
+
+## 5. Explicitly not on the current roadmap
 
 The current roadmap does not include:
 
@@ -506,12 +584,30 @@ The current roadmap does not include:
 
 ---
 
-## 5. Current next decision
+## 6. Current next decision
 
-Before writing production code, define the acceptance criteria for Phase 2:
+Begin:
 
-> **What is the minimum normalised contract and deterministic behaviour required
-> to execute `INS-MIXED-001` through replay, eligibility, bounded evaluation, and
-> result validation?**
+```text
+feature/runtime-rule-catalogue
+```
+
+with the Sprint Goal:
+
+> **Replace opaque rule IDs with the smallest controlled, versioned runtime
+> `RuleDefinition` model that can be resolved into the AssessmentContract for
+> `INS-MIXED-001`.**
+
+Before coding, define:
+
+- required rule fields
+- allowed statuses
+- duplicate handling
+- unknown-rule handling
+- deprecated-rule handling
+- source and version preservation
+- applicability semantics
+- positive and negative controlled cases
+- claim boundary for the sprint
 
 That is the next project decision boundary.

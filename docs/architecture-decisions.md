@@ -15,6 +15,8 @@ See also:
 - [`testing-strategy.md`](testing-strategy.md) — validation levels and claim boundaries
 - [`future-ideas.md`](future-ideas.md) — deliberately deferred research directions
 - [`conceptual-model.md`](conceptual-model.md) — working conceptual model and HLR draft
+- [`framework-architecture.md`](framework-architecture.md) — three-pillar product architecture and extension points
+- [`development-workflow.md`](development-workflow.md) — SDLC/STLC branch, PR, and milestone process
 - [`integration-architecture.md`](integration-architecture.md) — external-system ports, adapters, replay, and validation boundaries
 - [`roadmap.md`](roadmap.md) — staged implementation and validation path
 
@@ -38,6 +40,9 @@ See also:
 | AD-12 | Treat rules as a controlled, versioned, evolving catalogue organised into shared and domain evaluation packs | Active direction |
 | AD-13 | Make the evaluation core depend on normalised examinee/evaluator contracts rather than a specific transport or provider | Active direction |
 | AD-14 | Treat replay, stubs, and controlled capture as first-class validation modes; reserve live models for scoped evidence gathering | Active direction |
+| AD-15 | Structure the framework as Examinee Integration, Evaluator Integration, and a Validation Engine | Active |
+| AD-16 | Make all three pillars configurable while enforcing non-bypassable assessment invariants | Active |
+| AD-17 | Keep main runnable; develop through short-lived feature branches, PR evidence, and milestone tags | Active delivery model |
 
 ---
 
@@ -1214,6 +1219,211 @@ captured evidence.
 
 It does not demonstrate independent evaluator accuracy or broad model
 robustness.
+
+---
+
+
+
+# AD-15 — Use a three-pillar framework architecture
+
+## Status
+
+**Active.**
+
+## Context
+
+The project was initially described as an evaluator toolkit.
+
+Further design and the first runtime slices show a broader product structure.
+
+Two external roles must be connected:
+
+```text
+system under evaluation
+external evaluator
+```
+
+A separate internal component must validate the examination protocol.
+
+## Decision
+
+Structure the target framework around:
+
+```text
+1. Examinee Integration
+2. Evaluator Integration
+3. Validation Engine
+```
+
+### Examinee Integration
+
+Responsible for obtaining and normalising the candidate response.
+
+### Evaluator Integration
+
+Responsible for invoking or loading the external evaluator and normalising its
+proposed result.
+
+### Validation Engine
+
+Responsible for:
+
+- test-definition validation
+- Test Basis validation
+- rules and heuristics
+- evidence requirements
+- eligibility and scope
+- AssessmentContract construction
+- evaluator-result validation
+- scoped findings
+- claim boundaries
+
+## Consequence
+
+The controlled rule catalogue is a Validation Engine component.
+
+It is not the complete third pillar.
+
+The repository documentation and future public APIs should explain extension
+points by these three responsibilities.
+
+## Current runtime mapping
+
+The first two runtime slices already implement partial foundations for all three
+pillars:
+
+```text
+ExamineePort / ReplayExamineeAdapter
+EvaluatorPort / StubEvaluatorAdapter
+AssessmentEligibilityChecker / EvaluationResultValidator
+```
+
+The architecture remains incomplete.
+
+---
+
+# AD-16 — Configuration is allowed only inside validated invariants
+
+## Status
+
+**Active.**
+
+## Context
+
+The future framework should allow users to configure:
+
+- integration adapters
+- input sources
+- evaluator providers
+- domain packs
+- rule versions
+- evidence
+- targets
+- verdict policies
+
+Unrestricted configuration could produce internally inconsistent assessment
+contracts.
+
+## Decision
+
+Treat configuration as a selection mechanism, not an authority override.
+
+```text
+configurable
+≠
+uncontrolled
+```
+
+The Validation Engine must reject configuration that violates invariants.
+
+Examples:
+
+- factual target allowed while mandatory evidence is missing
+- deprecated rule treated as current authority
+- result from another `case_id` accepted
+- partial scope converted into an overall score
+- technical failure converted into examinee failure
+
+## Consequence
+
+Configuration loading requires deterministic validation.
+
+A configuration error is an evaluation-process outcome.
+
+It is not a substantive finding about the examinee.
+
+---
+
+# AD-17 — Main remains runnable; implementation uses short-lived evidence-backed branches
+
+## Status
+
+**Active delivery model.**
+
+## Context
+
+The Validation Engine will require several experiments and vertical slices.
+
+A long-lived parallel branch would separate public documentation, CI, and the
+project's visible truth from active implementation.
+
+## Decision
+
+Use:
+
+```text
+main
+→ always runnable and tested
+
+short-lived feature branch
+→ one slice or decision
+
+Pull Request
+→ scope, Test Basis, acceptance criteria, tests, limitations
+
+merge
+→ after review and green validation
+
+tag
+→ completed roadmap milestone
+```
+
+Recommended branches:
+
+```text
+feature/runtime-rule-catalogue
+feature/assessment-contract-builder
+feature/bounded-evaluator-prompt
+feature/live-evaluator-adapter
+```
+
+## SDLC and STLC requirement
+
+Every slice must demonstrate:
+
+```text
+software correctness
++
+evaluation-decision correctness or correct limitation
+```
+
+## Milestone tags
+
+Planned evidence milestones:
+
+```text
+v0.3.0-runtime-bridge
+v0.4.0-bounded-evaluator
+v0.5.0-controlled-live-validation
+```
+
+Tags do not imply production readiness.
+
+## Consequence
+
+No long-lived `develop` or `validator-v2` branch is planned.
+
+Branch code becomes project capability only after review and merge into `main`.
 
 ---
 
