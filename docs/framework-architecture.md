@@ -60,11 +60,17 @@ The third pillar defines and enforces the examination protocol.
                        ↓
                AssessmentContract
                        ↓
+          BoundedEvaluatorRequest
+                       ↓
 ┌──────────────────────────────────────────────┐
 │          2. EVALUATOR INTEGRATION            │
 │                                              │
 │ API │ callable │ CLI │ file │ replay        │
 └──────────────────────┬───────────────────────┘
+                       ↓
+              raw structured output
+                       ↓
+       StructuredEvaluatorResultParser
                        ↓
             ProposedEvaluatorResult
                        ↓
@@ -203,7 +209,15 @@ CandidateResponse
 +
 AssessmentContract
         ↓
+BoundedEvaluatorRequestBuilder
+        ↓
+BoundedEvaluatorRequest
+        ↓
 EvaluatorPort
+        ↓
+raw structured output
+        ↓
+StructuredEvaluatorResultParser
         ↓
 ProposedEvaluatorResult
 ```
@@ -244,7 +258,7 @@ ExamineePort
 → obtains the candidate response
 
 EvaluatorPort
-→ proposes findings under an AssessmentContract
+→ receives a bounded request and returns a proposed evaluator result
 ```
 
 A generic transport helper must not collapse those responsibilities into one
@@ -464,8 +478,8 @@ Expected documentation:
 Expected documentation:
 
 - required port contract
-- assessment-contract input
-- structured result expectations
+- bounded evaluator-request input
+- strict structured result expectations and parser reuse
 - technical-status mapping
 - raw-output preservation
 - example adapter
@@ -507,6 +521,10 @@ AssessmentContractBuilder
 AssessmentEligibilityChecker
 AssessmentEligibility
 AssessmentContract
+BoundedEvaluatorRequest
+BoundedEvaluatorRequestBuilder
+ReplayEvaluatorAdapter
+StructuredEvaluatorResultParser
 EvaluationResultValidator
 ScopedEvaluationResult
 ```
@@ -536,6 +554,14 @@ The runtime currently demonstrates:
 - cross-field request and candidate validation
 - rule applicability before evaluator invocation
 - defensive read-only evaluator-facing contract mappings
+- provider-neutral bounded evaluator request rendering
+- explicit allowed and excluded scope in the evaluator payload
+- explicit missing-evidence and verdict constraints
+- strict structured-result schema versioning
+- raw evaluator-output preservation
+- rejection of malformed JSON, markdown fences, duplicate keys, and schema drift
+- replay evaluator execution through the public parser
+- separation of parse errors from well-formed evaluator overreach
 
 ## Not yet implemented
 
@@ -543,16 +569,16 @@ Important missing runtime capabilities include:
 
 ```text
 complete conceptual Test Basis validation
-bounded evaluator prompt
-structured evaluator-result parser
 live evaluator adapter behind EvaluatorPort
 live or manually captured examinee experiment
+complete evidence-object delivery rather than identifiers only
 general configuration loading and validation
 public extension guides
 ```
 
-The next implementation step is the bounded evaluator request and structured
-result parser. It should remain replay/stub-based and provider-neutral.
+The next implementation step is one controlled live evaluator adapter behind
+the stable provider-neutral protocol. Live execution remains opt-in and must not
+weaken deterministic request, parser, or result-validation boundaries.
 
 ---
 

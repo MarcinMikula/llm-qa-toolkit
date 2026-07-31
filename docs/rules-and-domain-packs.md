@@ -677,6 +677,10 @@ Implemented controls include:
 - malformed and missing-file errors
 - disallowed-status rejection, including `DEPRECATED` under the current request
 - rejection when an evaluator cites a resolved rule for the wrong target
+- deterministic serialization of resolved rule version, status, source,
+  evaluator instruction, target intersection, evidence requirements, forbidden
+  behaviours, and permitted conclusions into `BoundedEvaluatorRequest`
+- strict structured-result parsing before deterministic rule-reference validation
 
 Catalogue and rule-definition failures stop the assessment before evaluator
 invocation and remain process errors rather than examinee failures.
@@ -692,9 +696,9 @@ large generic rules engine.
 
 - preserve the implemented controlled runtime catalogue
 - keep the first five rules explicitly `DRAFT`
-- develop the public AssessmentContract builder
+- preserve exact rule versions inside bounded evaluator requests
+- verify one live evaluator can follow the rule and scope protocol
 - retain rule and evidence decisions for traceability
-- prepare resolved rules for bounded evaluator prompt serialisation
 - keep `INS-MIXED-001` and all boundary cases green end to end
 
 ### RECORD

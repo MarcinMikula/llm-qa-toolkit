@@ -115,18 +115,27 @@ Conceptual responsibility:
 CandidateResponse
 +
 AssessmentContract
-    → external evaluator
-        → ProposedEvaluatorResult
+        ↓
+BoundedEvaluatorRequestBuilder
+        ↓
+BoundedEvaluatorRequest
+        ↓
+external evaluator transport
+        ↓
+raw structured output
+        ↓
+StructuredEvaluatorResultParser
+        ↓
+ProposedEvaluatorResult
 ```
 
 The evaluator adapter may need to:
 
-- build the constrained evaluator request
-- provide only allowed Test Basis
-- submit allowed targets and verdicts
-- enforce or request structured output
-- preserve raw output
-- normalise proposed findings
+- map the provider-neutral bounded request to its transport
+- send only the already-rendered evaluator context
+- request JSON-only structured output
+- preserve the exact raw output
+- run the public structured-result parser
 - preserve rule and evidence references
 - classify technical failures
 
@@ -179,9 +188,9 @@ Each output still enters a different role-specific envelope and validation path.
 
 ## 4. Normalised envelopes
 
-Exact runtime types are not yet committed.
-
-The following sketches identify information the core may need.
+The first runtime envelope types are now committed. The sketches below remain
+broader than the current implementation where future evidence and provider
+metadata are still anticipated.
 
 ### 4.1 Candidate response
 
@@ -460,11 +469,17 @@ ReplayExamineeAdapter
         ↓
 CandidateResponse
         ↓
-AssessmentEligibilityChecker
+AssessmentContractBuilder
         ↓
 AssessmentContract
         ↓
-StubEvaluatorAdapter
+BoundedEvaluatorRequestBuilder
+        ↓
+BoundedEvaluatorRequest
+        ↓
+ReplayEvaluatorAdapter
+        ↓
+StructuredEvaluatorResultParser
         ↓
 ProposedEvaluatorResult
         ↓
@@ -509,9 +524,9 @@ Verify that the adapter:
 
 Verify that the adapter:
 
-- accepts the candidate response and assessment contract
-- forwards only allowed evaluator context
-- returns a normalised proposed result
+- accepts a `BoundedEvaluatorRequest`
+- does not reconstruct or widen evaluator context
+- returns a normalised proposed result through the public parser
 - preserves raw output
 - classifies malformed or technical failures
 - does not silently widen assessment scope
@@ -577,34 +592,38 @@ A technically possible integration may still be organisationally prohibited.
 
 ```text
 CandidateResponse
+AssessmentContract
+BoundedEvaluatorRequest
 ProposedEvaluatorResult
 ExamineePort
 EvaluatorPort
 ReplayExamineeAdapter
 StubEvaluatorAdapter
+ReplayEvaluatorAdapter
+BoundedEvaluatorRequestBuilder
+StructuredEvaluatorResultParser
 ```
 
-These support the current replay-first assessment slice.
+The evaluator port now receives one provider-neutral bounded request rather than
+raw candidate and contract objects.
 
-### Current priority outside the integration layer
+The replay evaluator path reads raw JSON output and passes it through the same
+strict parser intended for a future live adapter.
 
-The next sprint belongs primarily to the Validation Engine:
+### Current integration priority
 
 ```text
-feature/runtime-rule-catalogue
+feature/live-evaluator-adapter
 ```
 
-Integration breadth should not expand while the assessment contract still
-contains opaque rule IDs.
+The first live adapter should:
 
-### Next integration work
-
-After the runtime rules and contract path are stable:
-
-```text
-adapt existing provider integration behind EvaluatorPort
-add one examinee adapter required by a controlled experiment
-```
+- consume `BoundedEvaluatorRequest`
+- preserve exact raw output
+- use `StructuredEvaluatorResultParser`
+- record provider/model/latency/cost metadata outside the core result authority
+- remain opt-in and budget-aware
+- avoid introducing provider-specific data into Validation Engine models
 
 ### Later, only when required
 
@@ -620,6 +639,7 @@ The architecture remains broad.
 
 Implementation remains evidence-led and narrow.
 
+---
 
 ## 12. Acceptance questions
 

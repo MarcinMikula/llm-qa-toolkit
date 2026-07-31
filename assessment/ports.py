@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Protocol
 
 from assessment.models import (
-    AssessmentContract,
+    BoundedEvaluatorRequest,
     CandidateResponse,
     ExamineeRequest,
     ProposedEvaluatorResult,
@@ -24,7 +24,6 @@ class EvaluatorPort(Protocol):
 
     def evaluate(
         self,
-        candidate_response: CandidateResponse,
-        contract: AssessmentContract,
+        request: BoundedEvaluatorRequest,
     ) -> ProposedEvaluatorResult:
-        """Evaluate only within the supplied assessment contract."""
+        """Evaluate only within the supplied bounded evaluator request."""

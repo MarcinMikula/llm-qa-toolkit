@@ -38,10 +38,11 @@ THREE-PILLAR TARGET ARCHITECTURE
     └── claim boundaries
 ```
 
-The project is currently between those two states.
+The replay-first runtime bridge now implements the first executable path through
+that target architecture.
 
-> **Current phase: build the smallest runtime bridge from the existing
-> judge/score prototype to the assessment-grounded architecture.**
+> **Current phase: connect one controlled live evaluator without weakening the
+> bounded request, strict parser, or deterministic result validator.**
 
 ---
 
@@ -67,8 +68,8 @@ The roadmap follows:
 |---|---|---|---|
 | 0 | Runnable evaluation prototype | ✅ Implemented | Mock-based tests, CI, Allure |
 | 1 | Conceptual reframing and scope control | ✅ Documented | Conceptual model, HLRs, decisions, guardrails |
-| 2 | Assessment-grounded runtime bridge | 🔶 Current, partially implemented | Replay slice, boundary validation, runtime rules next |
-| 3 | Controlled live integration | ⬜ Planned | Small repeated live-model experiment |
+| 2 | Assessment-grounded runtime bridge | ✅ Complete | Replay-based bounded request, parser, and deterministic validation |
+| 3 | Controlled live integration | 🔶 Next | Small repeated live-model experiment |
 | 4 | Evaluator and rule validation | ⬜ Planned | Human-justified labelled cases and failure analysis |
 | 5 | Legacy scoring/evaluator migration | ⬜ Planned | Evidence-based keep/change/remove decisions |
 | 6 | v1.0 Credible Evaluation Foundation | ⬜ Future gate | Measurable acceptance criteria and scoped claims |
@@ -154,7 +155,7 @@ It remains open to revision as implementation exposes contradictions.
 
 ## Status
 
-🔶 **Current phase — first three implementation slices complete**
+✅ **Complete — replay-first runtime bridge implemented**
 
 ## Objective
 
@@ -179,11 +180,19 @@ ReplayExamineeAdapter
         ↓
 CandidateResponse
         ↓
+AssessmentContractBuilder
+        ↓
 AssessmentEligibilityChecker
         ↓
 AssessmentContract
         ↓
-StubEvaluatorAdapter
+BoundedEvaluatorRequestBuilder
+        ↓
+BoundedEvaluatorRequest
+        ↓
+ReplayEvaluatorAdapter
+        ↓
+StructuredEvaluatorResultParser
         ↓
 ProposedEvaluatorResult
         ↓
@@ -280,24 +289,34 @@ The slice validates the current runtime definition and configuration invariants.
 It does not yet validate every conceptual Test Basis property described in the
 methodology documents.
 
-## Current Sprint 2E — bounded evaluator request and parser
+## Completed Sprint 2E — bounded evaluator request and parser
 
-Recommended branch:
+Implemented branch:
 
 ```text
 feature/bounded-evaluator-prompt
 ```
 
-Goal:
+Implemented:
 
-- serialize only allowed Test Basis and rules
-- state missing evidence explicitly
-- constrain targets and verdicts
-- parse structured proposed findings
-- preserve raw output
-- classify malformed output as process error
+- provider-neutral `BoundedEvaluatorRequest`
+- deterministic `BoundedEvaluatorRequestBuilder`
+- protocol version `0.1`
+- result schema version `0.1`
+- serialization of only the approved stimulus, candidate response, allowed
+  targets, verdicts, resolved rules, evidence identifiers, and prohibited claims
+- explicit excluded targets and missing-evidence identifiers
+- no arbitrary candidate metadata or provenance in the evaluator request
+- strict JSON-only `StructuredEvaluatorResultParser`
+- rejection of markdown fences, unexpected fields, duplicate object keys,
+  duplicate finding IDs, invalid enums, invalid scores, and schema mismatch
+- raw evaluator-output preservation
+- `ReplayEvaluatorAdapter` using the same public parser intended for live adapters
+- clear separation between malformed output and well-formed evaluator overreach
+- `EvaluatorPort` updated to accept a bounded request rather than raw core objects
+- `AssessmentRun` traceability for the exact evaluator request
 
-No live provider is required for Phase 2E.
+No live provider is required for this slice.
 
 ## Phase 2 exit criteria
 
@@ -310,9 +329,9 @@ No live provider is required for Phase 2E.
 - [x] Rule IDs are resolved to controlled runtime definitions
 - [x] Rule version, status, source, applicability, and evidence requirements are enforced
 - [x] Public AssessmentContract construction validates configuration invariants
-- [ ] Bounded evaluator request and structured result parser exist
+- [x] Bounded evaluator request and structured result parser exist
 - [x] Current rule-catalogue and boundary tests use the public construction path
-- [ ] Full default mock suite remains green
+- [x] Full default mock suite remains green
 
 ## Phase 2 milestone tag
 
@@ -322,7 +341,7 @@ Create:
 v0.3.0-runtime-bridge
 ```
 
-only when all Phase 2 exit criteria are complete.
+after Sprint 2E is merged and the full suite is re-verified on `main`.
 
 ---
 
@@ -330,7 +349,7 @@ only when all Phase 2 exit criteria are complete.
 
 ## Status
 
-⬜ **Planned after Phase 2**
+🔶 **Next phase**
 
 ## Objective
 

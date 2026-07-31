@@ -74,6 +74,7 @@ def _run(assessment_fixture: Path):
 def _assert_definition_error(run, evaluator, error_type: str) -> None:
     assert evaluator.call_count == 0
     assert run.assessment_contract is None
+    assert run.evaluator_request is None
     assert run.proposed_evaluator_result is None
     assert run.scoped_result.status is EvaluationStatus.ERROR
     assert run.scoped_result.technical_status.state is TechnicalState.ERROR

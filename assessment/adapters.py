@@ -6,8 +6,9 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from assessment.evaluator_protocol import StructuredEvaluatorResultParser
 from assessment.models import (
-    AssessmentContract,
+    BoundedEvaluatorRequest,
     AssessmentRequest,
     AssessmentTarget,
     CandidateResponse,
@@ -80,15 +81,14 @@ class StubEvaluatorAdapter:
     def __init__(self, result: ProposedEvaluatorResult) -> None:
         self._result = result
         self.call_count = 0
-        self.last_contract: AssessmentContract | None = None
+        self.last_request: BoundedEvaluatorRequest | None = None
 
     def evaluate(
         self,
-        candidate_response: CandidateResponse,
-        contract: AssessmentContract,
+        request: BoundedEvaluatorRequest,
     ) -> ProposedEvaluatorResult:
         self.call_count += 1
-        self.last_contract = contract
+        self.last_request = request
         return self._result
 
     @classmethod
@@ -171,6 +171,47 @@ class StubEvaluatorAdapter:
                     raw_output=raw_output,
                 )
             )
+
+
+class ReplayEvaluatorAdapter:
+    """Parse a saved raw evaluator output through the public result parser."""
+
+    def __init__(
+        self,
+        output_path: str | Path,
+        *,
+        parser: StructuredEvaluatorResultParser | None = None,
+    ) -> None:
+        self._output_path = Path(output_path)
+        self._parser = parser or StructuredEvaluatorResultParser()
+        self.call_count = 0
+        self.last_request: BoundedEvaluatorRequest | None = None
+
+    def evaluate(
+        self,
+        request: BoundedEvaluatorRequest,
+    ) -> ProposedEvaluatorResult:
+        self.call_count += 1
+        self.last_request = request
+
+        try:
+            raw_output = self._output_path.read_text(encoding="utf-8")
+        except FileNotFoundError as exc:
+            return self._parser.technical_error_result(
+                request=request,
+                error_type="EVALUATOR_OUTPUT_FILE_NOT_FOUND",
+                message=str(exc),
+                raw_output=None,
+            )
+        except OSError as exc:
+            return self._parser.technical_error_result(
+                request=request,
+                error_type="EVALUATOR_OUTPUT_READ_ERROR",
+                message=str(exc),
+                raw_output=None,
+            )
+
+        return self._parser.parse(raw_output, request)
 
 
 def load_examinee_request(fixture_path: str | Path) -> ExamineeRequest:

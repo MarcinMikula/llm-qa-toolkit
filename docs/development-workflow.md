@@ -379,7 +379,8 @@ They are not marketing labels and do not imply production maturity.
 v0.3.0-runtime-bridge
 ```
 
-Created only when Phase 2 is complete:
+Created after the completed Phase 2 runtime bridge is merged and verified on
+`main`:
 
 - runtime rule catalogue
 - AssessmentContract construction
@@ -478,13 +479,27 @@ Claim boundary:
 > It does not prove that the complete conceptual Test Basis is sufficient or
 > domain-correct.
 
-### Current slice E — bounded evaluator request and parser
+### Completed slice E — bounded evaluator request and parser
 
-```text
-feature/bounded-evaluator-prompt
-```
+Implemented:
 
-### Later integration slice
+- provider-neutral bounded evaluator request
+- deterministic request rendering
+- explicit allowed and excluded scope
+- explicit missing-evidence identifiers
+- strict result schema version `0.1`
+- structured JSON parser
+- raw-output preservation
+- replay evaluator adapter using the public parser
+- malformed-output process errors
+- parser/result-validator responsibility separation
+
+Claim boundary:
+
+> The slice proves deterministic protocol rendering and parsing. It does not
+> prove that a live evaluator follows the request or evaluates accurately.
+
+### Current integration slice
 
 ```text
 feature/live-evaluator-adapter
