@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from assessment.eligibility import AssessmentEligibilityChecker
+from assessment.contracts import AssessmentContractBuilder
 from assessment.models import (
     AssessmentDefinitionError,
     AssessmentRequest,
@@ -16,21 +16,19 @@ from assessment.validator import EvaluationResultValidator
 
 
 class AssessmentPipeline:
-    """Run examinee access, eligibility, bounded evaluation, and validation."""
+    """Run examinee access, contract construction, evaluation, and validation."""
 
     def __init__(
         self,
         *,
         examinee: ExamineePort,
         evaluator: EvaluatorPort,
-        eligibility_checker: AssessmentEligibilityChecker | None = None,
+        contract_builder: AssessmentContractBuilder | None = None,
         result_validator: EvaluationResultValidator | None = None,
     ) -> None:
         self._examinee = examinee
         self._evaluator = evaluator
-        self._eligibility_checker = (
-            eligibility_checker or AssessmentEligibilityChecker()
-        )
+        self._contract_builder = contract_builder or AssessmentContractBuilder()
         self._result_validator = result_validator or EvaluationResultValidator()
 
     def run(
@@ -53,7 +51,7 @@ class AssessmentPipeline:
             )
 
         try:
-            contract = self._eligibility_checker.build_contract(
+            contract = self._contract_builder.build(
                 candidate_response,
                 assessment_request,
             )

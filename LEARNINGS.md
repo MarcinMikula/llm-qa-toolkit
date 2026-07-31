@@ -2128,4 +2128,109 @@ It does not demonstrate:
 
 ---
 
+## A public contract builder is more than a renamed eligibility checker
+
+Sprint 2D exposed a responsibility problem in the first runtime slices.
+
+`AssessmentEligibilityChecker` previously performed several jobs:
+
+```text
+load rules
+validate candidate/request compatibility
+resolve rule definitions
+calculate gradability
+construct AssessmentContract
+```
+
+That made the runtime work, but it blurred the boundary between:
+
+```text
+eligibility calculation
+and
+trusted contract construction
+```
+
+The new split is:
+
+```text
+AssessmentContractBuilder
+├── validates current test-definition invariants
+├── validates candidate/request compatibility
+├── resolves controlled rules
+├── rejects invalid rule authority and applicability
+├── delegates evidence-based gradability
+├── creates defensive read-only mappings
+└── returns AssessmentContract
+
+AssessmentEligibilityChecker
+└── calculates allowed/excluded targets from evidence and resolved rules
+```
+
+### Why the builder is a gate
+
+The evaluator must not receive a contract assembled directly from unchecked
+configuration.
+
+The builder therefore rejects, before evaluator invocation:
+
+```text
+empty or duplicate targets
+missing or unexpected target mappings
+empty verdict sets
+duplicate or empty rule IDs
+DEPRECATED rule authority
+rules unrelated to the requested targets
+candidate/request case mismatch
+empty candidate identifiers
+empty evidence identifiers
+```
+
+These are process-definition failures.
+
+They are not findings about the system under evaluation.
+
+### Defensive immutability matters
+
+A frozen dataclass is not deeply immutable when it contains ordinary `dict`
+objects.
+
+The builder now copies contract mappings and exposes them as read-only mapping
+proxies.
+
+This prevents later mutation of the source request from silently changing the
+contract already supplied to an evaluator.
+
+### Scope boundary
+
+This sprint validates the current executable request structure and its
+cross-field invariants.
+
+It does not yet prove that:
+
+```text
+the evaluation objective is substantively correct
+the Test Basis is complete
+the controlled rules are domain-valid
+the evidence is trustworthy in the real world
+the evaluator will follow the contract
+```
+
+Those remain separate validation questions.
+
+### Next step
+
+The stable public construction path makes the next slice possible:
+
+```text
+AssessmentContract
+        ↓
+bounded evaluator request
+        ↓
+structured ProposedEvaluatorResult parser
+```
+
+No live provider is required for that slice.
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —

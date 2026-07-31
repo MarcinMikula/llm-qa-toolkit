@@ -11,7 +11,7 @@ from assessment.adapters import (
     load_assessment_request,
     load_examinee_request,
 )
-from assessment.eligibility import AssessmentEligibilityChecker
+from assessment.contracts import AssessmentContractBuilder
 from assessment.models import (
     AssessmentTarget,
     EvaluationStatus,
@@ -51,7 +51,7 @@ def _pipeline(*rule_files: Path) -> tuple[AssessmentPipeline, StubEvaluatorAdapt
         AssessmentPipeline(
             examinee=ReplayExamineeAdapter(FIXTURE_PATH),
             evaluator=evaluator,
-            eligibility_checker=AssessmentEligibilityChecker.from_rule_files(
+            contract_builder=AssessmentContractBuilder.from_rule_files(
                 *rule_files
             ),
         ),
@@ -108,13 +108,13 @@ def test_rule_required_evidence_participates_in_eligibility(tmp_path: Path) -> N
     multi_intent_rule["required_evidence"].append("rule_only_signal")
     modified_global_path = _write_json(tmp_path / "global_rules.json", modified_global)
 
-    checker = AssessmentEligibilityChecker.from_rule_files(
+    builder = AssessmentContractBuilder.from_rule_files(
         modified_global_path,
         INSURANCE_RULES,
     )
     examinee_request = load_examinee_request(FIXTURE_PATH)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
-    contract = checker.build_contract(
+    contract = builder.build(
         candidate,
         load_assessment_request(FIXTURE_PATH),
     )
@@ -164,13 +164,13 @@ def test_rule_for_only_excluded_target_is_not_exposed_to_evaluator(
     )
     modified_fixture_path = _write_json(tmp_path / "case.json", modified_fixture)
 
-    checker = AssessmentEligibilityChecker.from_rule_files(
+    builder = AssessmentContractBuilder.from_rule_files(
         modified_global_path,
         INSURANCE_RULES,
     )
     examinee_request = load_examinee_request(FIXTURE_PATH)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
-    contract = checker.build_contract(
+    contract = builder.build(
         candidate,
         load_assessment_request(modified_fixture_path),
     )

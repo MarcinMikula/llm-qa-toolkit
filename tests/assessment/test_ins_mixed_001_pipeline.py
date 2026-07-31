@@ -10,7 +10,7 @@ from assessment.adapters import (
     load_assessment_request,
     load_examinee_request,
 )
-from assessment.eligibility import AssessmentEligibilityChecker
+from assessment.contracts import AssessmentContractBuilder
 from assessment.models import (
     AssessmentTarget,
     EvaluationStatus,
@@ -30,8 +30,8 @@ RULE_FILES = (
 )
 
 
-def _checker() -> AssessmentEligibilityChecker:
-    return AssessmentEligibilityChecker.from_rule_files(*RULE_FILES)
+def _builder() -> AssessmentContractBuilder:
+    return AssessmentContractBuilder.from_rule_files(*RULE_FILES)
 
 
 def _build_pipeline(
@@ -42,7 +42,7 @@ def _build_pipeline(
     pipeline = AssessmentPipeline(
         examinee=ReplayExamineeAdapter(fixture_path),
         evaluator=evaluator,
-        eligibility_checker=_checker(),
+        contract_builder=_builder(),
     )
     return pipeline, evaluator
 
@@ -66,7 +66,7 @@ def test_missing_evidence_excludes_factual_targets() -> None:
     assessment_request = load_assessment_request(FIXTURE_PATH)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
 
-    contract = _checker().build_contract(candidate, assessment_request)
+    contract = _builder().build(candidate, assessment_request)
 
     assert set(contract.excluded_targets) == {
         AssessmentTarget.ACTUAL_INSURANCE_LIABILITY,
@@ -86,7 +86,7 @@ def test_behavioural_targets_remain_allowed() -> None:
     assessment_request = load_assessment_request(FIXTURE_PATH)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
 
-    contract = _checker().build_contract(candidate, assessment_request)
+    contract = _builder().build(candidate, assessment_request)
 
     assert contract.allowed_targets == frozenset(
         {
@@ -105,7 +105,7 @@ def test_contract_contains_controlled_rule_definitions() -> None:
     assessment_request = load_assessment_request(FIXTURE_PATH)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
 
-    contract = _checker().build_contract(candidate, assessment_request)
+    contract = _builder().build(candidate, assessment_request)
 
     assert tuple(rule.rule_id for rule in contract.applicable_rules) == (
         "GLOBAL-MULTI-INTENT-01",
