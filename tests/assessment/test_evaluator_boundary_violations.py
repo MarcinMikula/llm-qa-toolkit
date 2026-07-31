@@ -11,7 +11,7 @@ from assessment.adapters import (
     load_assessment_request,
     load_examinee_request,
 )
-from assessment.eligibility import AssessmentEligibilityChecker
+from assessment.contracts import AssessmentContractBuilder
 from assessment.models import (
     AssessmentContract,
     AssessmentTarget,
@@ -35,15 +35,15 @@ RULE_FILES = (
 )
 
 
-def _checker() -> AssessmentEligibilityChecker:
-    return AssessmentEligibilityChecker.from_rule_files(*RULE_FILES)
+def _builder() -> AssessmentContractBuilder:
+    return AssessmentContractBuilder.from_rule_files(*RULE_FILES)
 
 
 def _build_contract(fixture_path: Path = FIXTURE_PATH) -> AssessmentContract:
     examinee_request = load_examinee_request(FIXTURE_PATH)
     assessment_request = load_assessment_request(fixture_path)
     candidate = ReplayExamineeAdapter(FIXTURE_PATH).respond(examinee_request)
-    return _checker().build_contract(candidate, assessment_request)
+    return _builder().build(candidate, assessment_request)
 
 
 def _finding(
@@ -234,7 +234,7 @@ def test_malformed_stub_result_becomes_technical_error(tmp_path: Path) -> None:
     pipeline = AssessmentPipeline(
         examinee=ReplayExamineeAdapter(FIXTURE_PATH),
         evaluator=evaluator,
-        eligibility_checker=_checker(),
+        contract_builder=_builder(),
     )
 
     run = pipeline.run(

@@ -258,23 +258,29 @@ Still out of scope:
 - generic configuration framework
 - independent domain validation of the initial rules
 
-## Current Sprint 2D — AssessmentContract builder
+## Completed Sprint 2D — AssessmentContract builder
 
-Recommended branch:
+Implemented:
 
-```text
-feature/assessment-contract-builder
-```
+- public `AssessmentContractBuilder`
+- one supported runtime path for evaluator-facing contract construction
+- deterministic candidate/request case validation
+- non-empty and unique requested-target validation
+- exact target coverage for evidence and verdict mappings
+- non-empty verdict-set validation
+- duplicate and empty rule-ID validation
+- hard rejection of `DEPRECATED` authority in new contracts
+- requested-rule applicability validation
+- pure `AssessmentEligibilityChecker.evaluate(...)`
+- defensive read-only contract mappings
+- process-error separation before evaluator invocation
+- direct contract invariants in `AssessmentContract.__post_init__`
 
-Goal:
+The slice validates the current runtime definition and configuration invariants.
+It does not yet validate every conceptual Test Basis property described in the
+methodology documents.
 
-- validate test definition
-- resolve requested rule definitions
-- validate evidence and applicability
-- build the public runtime contract
-- remove test-only contract reconstruction such as `dataclasses.replace()`
-
-## Planned Sprint 2E — bounded evaluator request and parser
+## Current Sprint 2E — bounded evaluator request and parser
 
 Recommended branch:
 
@@ -303,7 +309,7 @@ No live provider is required for Phase 2E.
 - [x] No live API or paid model is required
 - [x] Rule IDs are resolved to controlled runtime definitions
 - [x] Rule version, status, source, applicability, and evidence requirements are enforced
-- [ ] Public AssessmentContract construction validates configuration invariants
+- [x] Public AssessmentContract construction validates configuration invariants
 - [ ] Bounded evaluator request and structured result parser exist
 - [x] Current rule-catalogue and boundary tests use the public construction path
 - [ ] Full default mock suite remains green

@@ -860,8 +860,10 @@ NEW ASSESSMENT RUNTIME
 → replay examinee and stub evaluator
 → controlled runtime RuleCatalog
 → versioned RuleDefinition objects
-→ assessment eligibility with rule evidence requirements
-→ AssessmentContract with resolved rules
+→ public AssessmentContractBuilder
+→ validated test-definition invariants
+→ pure evidence-based eligibility decision
+→ immutable AssessmentContract with resolved rules
 → deterministic result validation
 → ScopedEvaluationResult
 ```
@@ -878,14 +880,15 @@ The first runtime slice for `INS-MIXED-001` now proves that the framework can:
 
 The gap is not closed.
 
-The runtime rule catalogue now exists, but the Validation Engine still needs
-broader test-definition validation, a dedicated public contract builder, and a
-bounded evaluator request and result path.
+The public contract builder now validates the current runtime definition,
+resolves controlled rules, delegates evidence-based gradability, and creates a
+defensive evaluator-facing contract. The Validation Engine still needs a bounded
+evaluator request and structured result path.
 
 The next Phase 2 slice is therefore:
 
 ```text
-feature/assessment-contract-builder
+feature/bounded-evaluator-prompt
 ```
 
 See [`docs/roadmap.md`](docs/roadmap.md) and
@@ -910,31 +913,36 @@ See [`docs/roadmap.md`](docs/roadmap.md) and
 - ✅ Five versioned `DRAFT` rules for `INS-MIXED-001`
 - ✅ Rule status, source, applicability, and evidence validation
 - ✅ Rule-definition and catalogue errors separated from examinee failure
+- ✅ Public `AssessmentContractBuilder` as the single runtime construction path
+- ✅ Cross-field assessment-definition validation before evaluator invocation
+- ✅ Rule resolution separated from pure evidence-based eligibility
+- ✅ Defensive read-only contract mappings
+- ✅ Invalid configuration kept separate from examinee failure
 
 ### Current Phase 2 sprint
 
 ```text
-feature/assessment-contract-builder
+feature/bounded-evaluator-prompt
 ```
 
 Goal:
 
-> Move remaining test-definition and contract-construction invariants behind one
-> explicit public builder path.
+> Serialize the validated AssessmentContract into a bounded evaluator request and
+> parse structured proposed findings without calling a live provider.
 
 Current priorities:
 
-- ⏳ Validate the complete assessment definition before evaluator invocation
-- ⏳ Make contract construction the single supported runtime path
-- ⏳ Separate scenario requirements from catalogue-derived requirements clearly
-- ⏳ Preserve all missing-evidence and rule-resolution decisions for traceability
-- ⏳ Keep rule-catalogue failures as process errors
-- ⏳ Prepare the contract for bounded prompt serialisation
+- ⏳ Serialize only allowed targets, resolved rules, and available evidence
+- ⏳ State excluded targets and missing evidence explicitly
+- ⏳ Constrain permitted verdicts and prohibited claims
+- ⏳ Define a stable structured evaluator-result schema
+- ⏳ Preserve raw evaluator output
+- ⏳ Classify malformed output as an evaluation-process error
 
-### Later Phase 2 slice
+### Later Phase 2 integration
 
 ```text
-feature/bounded-evaluator-prompt
+feature/live-evaluator-adapter
 ```
 
 ### Controlled live integration

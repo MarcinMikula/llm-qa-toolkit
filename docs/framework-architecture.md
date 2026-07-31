@@ -502,7 +502,10 @@ ExamineePort
 EvaluatorPort
 ReplayExamineeAdapter
 StubEvaluatorAdapter
+RuleCatalog and RuleDefinition
+AssessmentContractBuilder
 AssessmentEligibilityChecker
+AssessmentEligibility
 AssessmentContract
 EvaluationResultValidator
 ScopedEvaluationResult
@@ -528,26 +531,28 @@ The runtime currently demonstrates:
 - rejection of mismatched `case_id`
 - malformed evaluator output as technical error
 - adapter error separated from substantive model failure
+- controlled runtime rule definitions and lifecycle status checks
+- one public AssessmentContract construction path
+- cross-field request and candidate validation
+- rule applicability before evaluator invocation
+- defensive read-only evaluator-facing contract mappings
 
 ## Not yet implemented
 
 Important missing runtime capabilities include:
 
 ```text
-runtime rule definitions rather than rule IDs only
-test-definition validation
-formal AssessmentContract builder
-rule lifecycle enforcement
+complete conceptual Test Basis validation
 bounded evaluator prompt
-structured live-result parser
+structured evaluator-result parser
 live evaluator adapter behind EvaluatorPort
 live or manually captured examinee experiment
-configuration loading and validation
+general configuration loading and validation
 public extension guides
 ```
 
-The next implementation step is the runtime rule catalogue as a component of the
-Validation Engine.
+The next implementation step is the bounded evaluator request and structured
+result parser. It should remain replay/stub-based and provider-neutral.
 
 ---
 

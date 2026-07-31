@@ -461,16 +461,32 @@ The slice did not add live LLM integration, broad domain catalogues,
 jurisdiction handling, a generic configuration framework, or a large rules
 engine.
 
-### Current slice D — AssessmentContract builder
+### Completed slice D — AssessmentContract builder
 
-```text
-feature/assessment-contract-builder
-```
+Implemented:
 
-### Later slices
+- public `AssessmentContractBuilder`
+- cross-field test-definition validation
+- rule resolution before eligibility evaluation
+- pure evidence-based `AssessmentEligibilityChecker`
+- defensive read-only contract mappings
+- configuration errors before evaluator invocation
+
+Claim boundary:
+
+> The slice validates the current runtime structure and cross-field invariants.
+> It does not prove that the complete conceptual Test Basis is sufficient or
+> domain-correct.
+
+### Current slice E — bounded evaluator request and parser
 
 ```text
 feature/bounded-evaluator-prompt
+```
+
+### Later integration slice
+
+```text
 feature/live-evaluator-adapter
 ```
 

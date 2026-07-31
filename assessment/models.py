@@ -197,27 +197,7 @@ class AssessmentRequest:
     allowed_verdicts: Mapping[AssessmentTarget, frozenset[Verdict]]
     prohibited_claims: frozenset[str]
 
-    def __post_init__(self) -> None:
-        requested = set(self.requested_targets)
-        missing_requirements = requested - set(self.required_evidence)
-        missing_verdicts = requested - set(self.allowed_verdicts)
 
-        if missing_requirements:
-            targets = ", ".join(sorted(target.value for target in missing_requirements))
-            raise ValueError(f"Missing evidence requirements for targets: {targets}")
-
-        if missing_verdicts:
-            targets = ", ".join(sorted(target.value for target in missing_verdicts))
-            raise ValueError(f"Missing allowed verdicts for targets: {targets}")
-
-        if len(self.requested_rule_ids) != len(set(self.requested_rule_ids)):
-            raise ValueError("Assessment request contains duplicate rule IDs.")
-
-        if self.requested_rule_ids and not self.allowed_rule_statuses:
-            raise ValueError(
-                "Assessment request must allow at least one rule status when rules "
-                "are requested."
-            )
 
 
 @dataclass(frozen=True)
@@ -227,6 +207,16 @@ class ExcludedTarget:
     target: AssessmentTarget
     reason: ExclusionReason
     missing_evidence: frozenset[str]
+
+
+@dataclass(frozen=True)
+class AssessmentEligibility:
+    """Evidence-based gradability decision before contract construction."""
+
+    allowed_targets: frozenset[AssessmentTarget]
+    excluded_targets: Mapping[AssessmentTarget, ExcludedTarget]
+    effective_required_evidence: Mapping[AssessmentTarget, frozenset[str]]
+    applicable_rules: tuple[RuleDefinition, ...]
 
 
 @dataclass(frozen=True)
@@ -247,6 +237,30 @@ class AssessmentContract:
         rule_ids = [rule.rule_id for rule in self.applicable_rules]
         if len(rule_ids) != len(set(rule_ids)):
             raise ValueError("Assessment contract contains duplicate rule IDs.")
+
+        if self.allowed_targets & set(self.excluded_targets):
+            raise ValueError(
+                "Allowed and excluded assessment targets must be disjoint."
+            )
+
+        all_targets = self.allowed_targets | set(self.excluded_targets)
+        if set(self.effective_required_evidence) != all_targets:
+            raise ValueError(
+                "Effective evidence requirements must cover every requested target."
+            )
+
+        if set(self.allowed_verdicts) != set(self.allowed_targets):
+            raise ValueError(
+                "Allowed verdicts must exist exactly for allowed assessment targets."
+            )
+
+        if any(
+            not rule.applies_to_targets & self.allowed_targets
+            for rule in self.applicable_rules
+        ):
+            raise ValueError(
+                "Every rule in the contract must apply to an allowed target."
+            )
 
     @property
     def is_partial(self) -> bool:
