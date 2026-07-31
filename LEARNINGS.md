@@ -2233,4 +2233,230 @@ No live provider is required for that slice.
 
 ---
 
+## A bounded evaluator needs two different gates: syntax and authority
+
+Sprint 2E made the evaluator boundary executable without adding a live provider.
+
+The new runtime path is:
+
+```text
+AssessmentContract
+        ↓
+BoundedEvaluatorRequestBuilder
+        ↓
+BoundedEvaluatorRequest
+        ↓
+raw evaluator output
+        ↓
+StructuredEvaluatorResultParser
+        ↓
+ProposedEvaluatorResult
+        ↓
+EvaluationResultValidator
+```
+
+### The request is a data-minimisation boundary
+
+The evaluator should not receive every field available inside the framework.
+
+The bounded request includes:
+
+```text
+stimulus
+candidate response text
+allowed targets
+allowed verdicts
+resolved controlled rules
+available-evidence identifiers
+excluded targets
+missing-evidence identifiers
+prohibited claims
+required output schema
+```
+
+It intentionally excludes arbitrary adapter metadata and provenance fields.
+
+This creates a clearer rule:
+
+> **The evaluator receives only context authorised by the assessment protocol,
+> not every piece of context available to the application.**
+
+### Excluded scope must be explicit
+
+Silently omitting an ungradable target is weaker than stating:
+
+```text
+target: actual_warsaw_weather
+reason: MISSING_REQUIRED_EVIDENCE
+missing: current_authoritative_forecast
+```
+
+Explicit exclusions make it possible to test whether a live evaluator respects
+boundaries rather than merely failing to notice a target.
+
+### Strict JSON is a protocol decision
+
+The structured parser accepts one JSON object only.
+
+It rejects:
+
+```text
+markdown fences
+free-form preambles
+unexpected fields
+duplicate object keys
+duplicate finding IDs
+unknown schema versions
+invalid target or verdict values
+invalid score types
+```
+
+This strictness may reduce convenience with some models, but it improves:
+
+```text
+repeatability
+traceability
+failure classification
+provider comparison
+```
+
+A future live adapter may use provider-native structured output, but the core
+parser contract should remain stable.
+
+### Malformed output and evaluator overreach are different failures
+
+The parser asks:
+
+```text
+Is this output structurally valid?
+```
+
+The result validator asks:
+
+```text
+Was the evaluator authorised to make this finding?
+```
+
+Therefore a structurally valid result with:
+
+```text
+wrong case_id
+unknown rule
+invented evidence
+excluded target
+prohibited claim
+forbidden verdict
+```
+
+is not a parse failure.
+
+It is preserved as a `ProposedEvaluatorResult` and rejected by deterministic
+result validation.
+
+This distinction is important because:
+
+```text
+malformed output
+≠
+well-formed overreach
+```
+
+They reveal different evaluator weaknesses.
+
+### Raw output must survive parsing
+
+Even when parsing fails, the original output is evidence about the integration
+or evaluator behaviour.
+
+The runtime therefore preserves raw output whenever available.
+
+A parser error becomes:
+
+```text
+TechnicalState.ERROR
+accepted findings: none
+substantive examinee failure: false
+```
+
+It does not become candidate-model `FAIL`.
+
+### Replay is now closer to the future live path
+
+The earlier typed stub could return a ready-made `ProposedEvaluatorResult`.
+
+That remains useful for isolated validator tests, but it bypasses the parser.
+
+`ReplayEvaluatorAdapter` now reads saved raw evaluator output and uses the same
+public parser intended for a future provider adapter.
+
+This proves:
+
+```text
+request construction
+raw-output ingestion
+structured parsing
+result validation
+```
+
+without proving live-model competence.
+
+### Overall-score overreach remains visible
+
+For a partial contract, the request says:
+
+```text
+overall_score: must_be_null
+```
+
+The parser still normalises a numeric score if the evaluator returns one.
+
+The result validator then preserves and rejects it as overreach.
+
+This maintains the role split:
+
+```text
+request constrains
+parser normalises
+validator decides acceptance
+```
+
+### Claim boundary
+
+Sprint 2E demonstrates:
+
+- deterministic request rendering
+- protocol and schema versioning
+- bounded evaluator context
+- explicit exclusions and missing evidence
+- strict structured parsing
+- raw-output preservation
+- replay-based end-to-end protocol execution
+- separation of parse errors from authority violations
+
+It does not demonstrate:
+
+- live evaluator compliance
+- semantic evaluator accuracy
+- complete evidence delivery
+- domain correctness of rules
+- provider reliability
+- production readiness
+
+### Next step
+
+The replay-first Phase 2 runtime bridge is now complete.
+
+The next evidence question is no longer whether a request and result can move
+through the framework.
+
+It is:
+
+> **Can one real external evaluator consume the bounded request and reliably stay
+> inside the supplied scope?**
+
+That belongs to a controlled live adapter slice, not to further expansion of the
+core protocol.
+
+---
+
 — kolejne sekcje będą tu dodawane wraz z postępem projektu —

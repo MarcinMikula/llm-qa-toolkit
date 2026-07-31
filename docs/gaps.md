@@ -246,7 +246,7 @@ versions, prompts, or results collected at different points in time.
 
 ## G-06 — Evaluation error semantics
 
-**Status: OPEN**
+**Status: PARTIALLY CLOSED**
 
 Technical failure of an evaluator is not the same thing as a medium-quality model
 response.
@@ -300,6 +300,21 @@ rather than inventing a substantive score when evaluation did not complete
 reliably.
 
 This is both a technical correctness gap and a reporting/traceability gap.
+
+The assessment-grounded runtime now separates:
+
+```text
+request / adapter / parser ERROR
+from
+accepted substantive finding
+```
+
+`StructuredEvaluatorResultParser` preserves raw output and returns a technical
+error with no findings when strict parsing fails. `EvaluationResultValidator`
+continues to distinguish malformed output from well-formed evaluator overreach.
+
+The gap remains open for the legacy score-based evaluator path until its fallback
+semantics are reviewed and migrated or explicitly retained.
 
 ---
 

@@ -45,10 +45,21 @@ and `../LEARNINGS.md` for the reasoning behind them.
   such as model version, prompt version, judge version, run date, number of
   runs, live/mock mode, and approval basis.
 
-- **Evaluation execution errors are not yet fully separated from substantive
-  verdicts.** Some evaluator or parser failures can fall back to neutral-looking
-  numeric values. A technical evaluation failure should not be interpreted as
-  equivalent to a medium-quality candidate response.
+- **Error separation is implemented in the assessment-grounded path, but not
+  fully migrated across the legacy scoring path.** The new bounded evaluator
+  protocol represents request, adapter, and parser failures as technical process
+  errors with no substantive examinee finding. Some older score-based evaluators
+  may still use fallback numeric behaviour and remain subject to later migration.
+
+- **The bounded request currently carries evidence identifiers, not complete
+  versioned evidence objects.** It can state what evidence is available or
+  missing, but it does not yet deliver authoritative source content, provenance,
+  applicability dates, jurisdiction, or approval state to a live evaluator.
+
+- **Strict JSON parsing is validated only with replayed outputs.** The current
+  parser rejects markdown fences, extra fields, duplicate keys, schema drift,
+  and malformed findings, but no live evaluator has yet demonstrated reliable
+  compliance with that protocol.
 
 - **Controlled live validation is still pending.**
   Live-provider execution is supported, but the toolkit has not yet completed a

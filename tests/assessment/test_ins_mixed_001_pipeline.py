@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from assessment.adapters import (
+    ReplayEvaluatorAdapter,
     ReplayExamineeAdapter,
-    StubEvaluatorAdapter,
     load_assessment_request,
     load_examinee_request,
 )
@@ -28,6 +28,13 @@ RULE_FILES = (
     PROJECT_ROOT / "testdata" / "assessment" / "rules" / "global_rules.json",
     PROJECT_ROOT / "testdata" / "assessment" / "rules" / "insurance_rules.json",
 )
+EVALUATOR_OUTPUT_PATH = (
+    PROJECT_ROOT
+    / "testdata"
+    / "assessment"
+    / "evaluator_outputs"
+    / "ins_mixed_001.json"
+)
 
 
 def _builder() -> AssessmentContractBuilder:
@@ -37,8 +44,8 @@ def _builder() -> AssessmentContractBuilder:
 def _build_pipeline(
     *,
     fixture_path: Path = FIXTURE_PATH,
-) -> tuple[AssessmentPipeline, StubEvaluatorAdapter]:
-    evaluator = StubEvaluatorAdapter.from_fixture(FIXTURE_PATH)
+) -> tuple[AssessmentPipeline, ReplayEvaluatorAdapter]:
+    evaluator = ReplayEvaluatorAdapter(EVALUATOR_OUTPUT_PATH)
     pipeline = AssessmentPipeline(
         examinee=ReplayExamineeAdapter(fixture_path),
         evaluator=evaluator,
@@ -136,7 +143,12 @@ def test_end_to_end_accepts_scoped_findings_and_rejects_overreach() -> None:
     )
 
     assert evaluator.call_count == 1
-    assert evaluator.last_contract == run.assessment_contract
+    assert evaluator.last_request == run.evaluator_request
+    assert run.evaluator_request is not None
+    assert run.proposed_evaluator_result is not None
+    assert run.proposed_evaluator_result.raw_output == (
+        EVALUATOR_OUTPUT_PATH.read_text(encoding="utf-8")
+    )
     assert run.scoped_result.status is EvaluationStatus.COMPLETED_WITH_REJECTIONS
     assert {finding.finding_id for finding in run.scoped_result.accepted_findings} == {
         "F-001",
@@ -197,6 +209,7 @@ def test_adapter_error_is_not_a_substantive_failure(tmp_path: Path) -> None:
     assert run.candidate_response.technical_status.state is TechnicalState.ERROR
     assert run.candidate_response.technical_status.error_type == "REPLAY_FILE_NOT_FOUND"
     assert run.assessment_contract is None
+    assert run.evaluator_request is None
     assert run.proposed_evaluator_result is None
     assert evaluator.call_count == 0
     assert run.scoped_result.status is EvaluationStatus.ERROR

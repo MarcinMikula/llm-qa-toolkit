@@ -282,6 +282,28 @@ class AssessmentContract:
 
 
 @dataclass(frozen=True)
+class BoundedEvaluatorRequest:
+    """Provider-neutral evaluator request rendered from one assessment contract."""
+
+    protocol_version: str
+    result_schema_version: str
+    case_id: str
+    candidate_response_id: str
+    instruction: str
+    payload_json: str
+
+    @property
+    def rendered_prompt(self) -> str:
+        """Text that a provider adapter may send to an external evaluator."""
+
+        return (
+            f"{self.instruction}\n\n"
+            "BOUNDED_ASSESSMENT_REQUEST_JSON:\n"
+            f"{self.payload_json}"
+        )
+
+
+@dataclass(frozen=True)
 class ProposedFinding:
     """Finding proposed by an evaluator before deterministic validation."""
 
@@ -350,5 +372,6 @@ class AssessmentRun:
 
     candidate_response: CandidateResponse
     assessment_contract: AssessmentContract | None
+    evaluator_request: BoundedEvaluatorRequest | None
     proposed_evaluator_result: ProposedEvaluatorResult | None
     scoped_result: ScopedEvaluationResult

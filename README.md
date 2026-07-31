@@ -165,20 +165,27 @@ response, or a file containing a prompt-response pair with provenance.
 
 #### 2. Evaluator Integration
 
-Connects an external semantic evaluator:
+Connects an external semantic evaluator through a bounded, versioned request:
 
 ```text
 CandidateResponse
 +
 AssessmentContract
         ↓
+BoundedEvaluatorRequest
+        ↓
 API │ callable │ CLI │ file │ replay
+        ↓
+raw structured output
+        ↓
+StructuredEvaluatorResultParser
         ↓
 ProposedEvaluatorResult
 ```
 
 The evaluator and examinee may share transport utilities, but they keep separate
-role contracts.
+role contracts. The evaluator sees only the scope, rules, evidence identifiers,
+and verdict constraints rendered by the Validation Engine.
 
 #### 3. Validation Engine
 
@@ -193,6 +200,8 @@ evidence requirements
 assessment eligibility
 target and verdict constraints
 AssessmentContract construction
+bounded evaluator request construction
+structured result parsing
 evaluator-result validation
 scoped findings
 claim boundaries
@@ -259,6 +268,7 @@ In other words:
 - [`docs/development-workflow.md`](docs/development-workflow.md) — SDLC/STLC sprint, branch, PR, and milestone-release process
 - [`docs/rules-and-domain-packs.md`](docs/rules-and-domain-packs.md) — controlled rules layer, bounded evaluator protocol, and domain-pack model
 - [`docs/integration-architecture.md`](docs/integration-architecture.md) — transport-neutral examinee/evaluator ports, adapters, replay, and live-validation boundaries
+- [`docs/evaluator-protocol.md`](docs/evaluator-protocol.md) — bounded request and strict structured-result protocol v0.1
 - [`docs/roadmap.md`](docs/roadmap.md) — current project position, next vertical slice, validation path, and v1.0 gates
 - [`docs/architecture-decisions.md`](docs/architecture-decisions.md) — current structural and scope decisions
 - [`docs/scope-guardrails.md`](docs/scope-guardrails.md) — boundaries that prevent conceptual growth from becoming uncontrolled implementation scope
@@ -857,13 +867,17 @@ LEGACY RUNNING CODE
 NEW ASSESSMENT RUNTIME
 → CandidateResponse
 → separate examinee/evaluator ports
-→ replay examinee and stub evaluator
 → controlled runtime RuleCatalog
 → versioned RuleDefinition objects
 → public AssessmentContractBuilder
 → validated test-definition invariants
 → pure evidence-based eligibility decision
 → immutable AssessmentContract with resolved rules
+→ BoundedEvaluatorRequestBuilder
+→ provider-neutral, versioned evaluator request
+→ ReplayEvaluatorAdapter
+→ strict StructuredEvaluatorResultParser
+→ raw-output preservation
 → deterministic result validation
 → ScopedEvaluationResult
 ```
@@ -878,17 +892,18 @@ The first runtime slice for `INS-MIXED-001` now proves that the framework can:
 - represent malformed evaluator output as a technical evaluation error
 - keep adapter failure separate from substantive examinee failure
 
-The gap is not closed.
+The replay-first Phase 2 runtime bridge is now complete.
 
-The public contract builder now validates the current runtime definition,
-resolves controlled rules, delegates evidence-based gradability, and creates a
-defensive evaluator-facing contract. The Validation Engine still needs a bounded
-evaluator request and structured result path.
+The public contract builder validates the current runtime definition, resolves
+controlled rules, delegates evidence-based gradability, and creates a defensive
+contract. The bounded evaluator protocol then serializes only the approved
+scope, states missing evidence explicitly, requires strict JSON, preserves raw
+output, and separates malformed output from well-formed evaluator overreach.
 
-The next Phase 2 slice is therefore:
+The next implementation stage is controlled live integration:
 
 ```text
-feature/bounded-evaluator-prompt
+feature/live-evaluator-adapter
 ```
 
 See [`docs/roadmap.md`](docs/roadmap.md) and
@@ -918,28 +933,35 @@ See [`docs/roadmap.md`](docs/roadmap.md) and
 - ✅ Rule resolution separated from pure evidence-based eligibility
 - ✅ Defensive read-only contract mappings
 - ✅ Invalid configuration kept separate from examinee failure
+- ✅ `BoundedEvaluatorRequestBuilder` and provider-neutral request v0.1
+- ✅ Explicit allowed/excluded scope and missing-evidence serialization
+- ✅ Strict structured evaluator-result parser v0.1
+- ✅ Raw evaluator output preservation
+- ✅ Replay evaluator path through the public parser
+- ✅ Malformed output kept separate from substantive examinee failure
 
-### Current Phase 2 sprint
+### Phase 2 runtime bridge complete
+
+Completed on replay/stub infrastructure:
 
 ```text
-feature/bounded-evaluator-prompt
+validated AssessmentContract
+        ↓
+bounded evaluator request
+        ↓
+replayed raw evaluator output
+        ↓
+strict structured parser
+        ↓
+deterministic result validator
+        ↓
+scoped findings
 ```
 
-Goal:
+The Phase 2 milestone is ready for the `v0.3.0-runtime-bridge` tag after the
+feature branch is merged and the full suite is verified on `main`.
 
-> Serialize the validated AssessmentContract into a bounded evaluator request and
-> parse structured proposed findings without calling a live provider.
-
-Current priorities:
-
-- ⏳ Serialize only allowed targets, resolved rules, and available evidence
-- ⏳ State excluded targets and missing evidence explicitly
-- ⏳ Constrain permitted verdicts and prohibited claims
-- ⏳ Define a stable structured evaluator-result schema
-- ⏳ Preserve raw evaluator output
-- ⏳ Classify malformed output as an evaluation-process error
-
-### Later Phase 2 integration
+### Next phase — controlled live integration
 
 ```text
 feature/live-evaluator-adapter

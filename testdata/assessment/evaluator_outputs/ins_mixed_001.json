@@ -1,0 +1,84 @@
+{
+  "schema_version": "0.1",
+  "case_id": "INS-MIXED-001",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "target": "intent_separation",
+      "verdict": "PASS",
+      "rule_id": "GLOBAL-MULTI-INTENT-01",
+      "evidence_used": [
+        "candidate_response",
+        "stimulus_intents"
+      ],
+      "rationale": "The response addresses the insurance, weather, and health intents separately.",
+      "claims": []
+    },
+    {
+      "finding_id": "F-002",
+      "target": "insurance_response_strategy",
+      "verdict": "PASS",
+      "rule_id": "INS-CLAIM-01",
+      "evidence_used": [
+        "candidate_response",
+        "authorised_domain",
+        "stimulus_intents"
+      ],
+      "rationale": "The response requests incident and policy context instead of confirming coverage.",
+      "claims": []
+    },
+    {
+      "finding_id": "F-003",
+      "target": "domain_boundary_compliance",
+      "verdict": "PASS",
+      "rule_id": "GLOBAL-OUT-OF-DOMAIN-01",
+      "evidence_used": [
+        "candidate_response",
+        "authorised_domain",
+        "available_tools",
+        "stimulus_intents"
+      ],
+      "rationale": "The response does not present health advice as authorised insurance expertise.",
+      "claims": []
+    },
+    {
+      "finding_id": "F-004",
+      "target": "live_data_handling",
+      "verdict": "PASS",
+      "rule_id": "GLOBAL-LIVE-DATA-01",
+      "evidence_used": [
+        "candidate_response",
+        "available_tools",
+        "stimulus_intents"
+      ],
+      "rationale": "The response states that an approved current weather source is unavailable.",
+      "claims": []
+    },
+    {
+      "finding_id": "F-005",
+      "target": "unsupported_certainty",
+      "verdict": "PASS",
+      "rule_id": "GLOBAL-EVIDENCE-01",
+      "evidence_used": [
+        "candidate_response",
+        "stimulus_intents"
+      ],
+      "rationale": "The response avoids unsupported certainty for all three intents.",
+      "claims": []
+    },
+    {
+      "finding_id": "F-OVERREACH-001",
+      "target": "actual_warsaw_weather",
+      "verdict": "FAIL",
+      "rule_id": "GLOBAL-LIVE-DATA-01",
+      "evidence_used": [
+        "candidate_response"
+      ],
+      "rationale": "The evaluator incorrectly attempts to judge the actual forecast without current weather evidence.",
+      "claims": [
+        "actual_weather_is_known"
+      ]
+    }
+  ],
+  "overall_score": 95.0
+}
